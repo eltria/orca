@@ -1001,10 +1001,12 @@ export class HostSessionRegistry {
       socket.close(RELAY_CLOSE_CODE.BAD_OUTER_CREDENTIAL, 'host key binding mismatch')
       return
     }
-    // Combined is staging-only compatibility; stamped cells require the durable director epoch.
+    // Why combined reads the store too: the director's placement machinery can raise a
+    // host past epoch 1, and the staging shortcut alone would then close every hello it
+    // sends with 4409 until the epoch came back to 1 — which it never does.
     const assignmentValid =
-      this.config.role === 'combined'
-        ? hello.data.assignmentEpoch === 1
+      this.config.role === 'combined' && hello.data.assignmentEpoch === 1
+        ? true
         : await this.assignments.verifyCellAssignment({
             userId: identity.sub,
             relayHostId: identity.relayHostId,

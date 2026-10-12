@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { EventEmitter } from 'node:events'
 import {
   ASSIGNMENT_LIMITS,
@@ -7,6 +8,7 @@ import {
   RELAY_HOST_CAPABILITY_IDLE_REGIONAL_REHOME,
   RELAY_PROTOCOL_LIMITS
 } from '@orca-cloud/relay-contract'
+import nacl from 'tweetnacl'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type WebSocket from 'ws'
 import type { RelayAssignmentStore } from './assignment-store.js'
@@ -119,10 +121,12 @@ function deferred<T>(): {
 function createRegistry(
   activateControl: RelayAssignmentStore['activateControl'],
   store: Partial<RelayCredentialStore> = {},
-  verifyRelayToken: (token: string) => Promise<RelayTokenClaims | null> = vi.fn()
+  verifyRelayToken: (token: string) => Promise<RelayTokenClaims | null> = vi.fn(),
+  configOverride: Partial<RelayConfig> = {}
 ): {
   registry: HostSessionRegistry
   activate: ActivateSession
+  verifyCellAssignment: ReturnType<typeof vi.fn>
   acquireActivity: ReturnType<typeof vi.fn>
   renewControlActivity: ReturnType<typeof vi.fn>
   renewControlActivities: ReturnType<typeof vi.fn>
@@ -161,8 +165,10 @@ function createRegistry(
         })
       )
   )
+  const verifyCellAssignment = vi.fn().mockResolvedValue(false)
   const assignments = {
     activateControl,
+    verifyCellAssignment,
     markMigrationTargetRegistered: vi.fn().mockResolvedValue(undefined),
     resolve: vi.fn().mockResolvedValue({ cellId: config.cellId }),
     acquireActivity,
@@ -180,7 +186,7 @@ function createRegistry(
     recordSpliceClose: vi.fn()
   } satisfies RelayRuntimeObserver
   const registry = new HostSessionRegistry(
-    config,
+    { ...config, ...configOverride },
     verifyRelayToken,
     store as RelayCredentialStore,
     assignments,
@@ -217,6 +223,7 @@ function createRegistry(
   return {
     registry,
     activate,
+    verifyCellAssignment,
     acquireActivity,
     renewControlActivity,
     renewControlActivities,
@@ -2011,5 +2018,81 @@ describe('paced drain', () => {
     const sendsAfterEmergency = sockets.map((socket) => socket.send.mock.calls.length)
     await vi.advanceTimersByTimeAsync(40_000)
     expect(sockets.map((socket) => socket.send.mock.calls.length)).toEqual(sendsAfterEmergency)
+  })
+})
+
+// A combined relay serves director and cell in one process; the director's placement
+// machinery can raise a host's stored epoch past 1, and the staging shortcut alone then
+// answered 4409 to every hello that host sent — a reconnect loop no restart could clear.
+describe('combined relay host hello assignment epoch', () => {
+  beforeEach(() => vi.useFakeTimers())
+  afterEach(() => {
+    vi.clearAllTimers()
+    vi.useRealTimers()
+  })
+
+  const keyPair = nacl.box.keyPair()
+  const hostPublicKeyB64 = Buffer.from(keyPair.publicKey).toString('base64')
+  const hostIdentity = {
+    ...identity,
+    relayHostId: createHash('sha256').update(keyPair.publicKey).digest('base64url').slice(0, 16)
+  } satisfies RelayTokenClaims
+
+  async function helloAtEpoch(
+    assignmentEpoch: number,
+    storedEpochMatches: boolean
+  ): Promise<{ socket: FakeSocket; verifyCellAssignment: ReturnType<typeof vi.fn> }> {
+    const { registry, verifyCellAssignment } = createRegistry(
+      vi.fn<RelayAssignmentStore['activateControl']>().mockResolvedValue('control:combined:1'),
+      {},
+      vi.fn(),
+      { role: 'combined' }
+    )
+    verifyCellAssignment.mockResolvedValue(storedEpochMatches)
+    const socket = new FakeSocket()
+    registry.acceptControl(socket as unknown as WebSocket, hostIdentity, undefined)
+    socket.emit(
+      'message',
+      Buffer.from(
+        JSON.stringify({
+          type: 'host-hello',
+          v: 1,
+          relayHostId: hostIdentity.relayHostId,
+          assignmentEpoch,
+          hostPublicKeyB64,
+          appVersion: 'test'
+        })
+      ),
+      false
+    )
+    await vi.advanceTimersByTimeAsync(0)
+    return { socket, verifyCellAssignment }
+  }
+
+  function sentTypes(socket: FakeSocket): string[] {
+    return socket.send.mock.calls.map((call) => JSON.parse(String(call[0])).type as string)
+  }
+
+  it('admits the epoch the director stored instead of closing every hello 4409', async () => {
+    const { socket, verifyCellAssignment } = await helloAtEpoch(2, true)
+
+    expect(verifyCellAssignment).toHaveBeenCalledWith(
+      expect.objectContaining({ assignmentEpoch: 2 })
+    )
+    expect(socket.close).not.toHaveBeenCalled()
+    expect(sentTypes(socket)).toContain('host-challenge')
+  })
+
+  it('still closes 4409 when the store holds a different epoch', async () => {
+    const { socket } = await helloAtEpoch(3, false)
+
+    expect(socket.close).toHaveBeenCalledWith(RELAY_CLOSE_CODE.WRONG_CELL, 'wrong assignment epoch')
+  })
+
+  it('keeps the epoch-1 staging shortcut without a store read', async () => {
+    const { socket, verifyCellAssignment } = await helloAtEpoch(1, false)
+
+    expect(verifyCellAssignment).not.toHaveBeenCalled()
+    expect(sentTypes(socket)).toContain('host-challenge')
   })
 })
