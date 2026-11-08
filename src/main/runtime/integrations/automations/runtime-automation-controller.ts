@@ -111,6 +111,7 @@ export class RuntimeAutomationController {
         prompt: input.prompt,
         precheck: input.precheck,
         agentId: input.agentId,
+        ...(input.customAgentId ? { customAgentId: input.customAgentId } : {}),
         extraAgentArgs: input.extraAgentArgs,
         launchSetupPatch: input.launchSetupPatch,
         runContext: input.runContext,

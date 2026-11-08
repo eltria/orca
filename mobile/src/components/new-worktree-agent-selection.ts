@@ -1,18 +1,51 @@
 import type { TuiAgent } from '../../../src/shared/agent-launch/catalog/tui-agent'
+import {
+  normalizeCustomTuiAgents,
+  offerableCustomTuiAgents
+} from '../../../src/shared/agent-launch/catalog/custom-tui-agents'
 import { translate } from '../i18n/mobile-i18n'
 import { MOBILE_AGENT_CATALOG } from '../tasks/mobile-agent-catalog'
 import { isMobileTuiAgentEnabled } from '../tasks/mobile-tui-agents'
-import { pickWorkspaceAgent } from '../tasks/workspace-agent-selection'
+import {
+  parseCustomWorkspaceAgentChoice,
+  pickWorkspaceAgent
+} from '../tasks/workspace-agent-selection'
 
 export type NewWorktreeRuntimeSettings = {
   defaultTuiAgent?: TuiAgent | 'blank' | null
   disabledTuiAgents?: TuiAgent[]
+  customTuiAgents?: unknown
+  defaultCustomTuiAgentId?: unknown
 }
 
 export type NewWorktreeAgentOption = {
   id: TuiAgent | '__blank__'
   label: string
   faviconDomain?: string
+  /** A custom agent of the host backed by `id`; the host starts its command in a terminal. */
+  customAgentId?: string
+  /** The custom agent's command, shown under its name. */
+  detail?: string
+}
+
+/** Unique among the options: a custom agent shares its base agent's `id`. */
+export function newWorktreeAgentOptionKey(option: NewWorktreeAgentOption): string {
+  return option.customAgentId ? `custom-agent:${option.customAgentId}` : option.id
+}
+
+/** The host's custom agents whose base agent is enabled; detection does not gate them. */
+export function newWorktreeCustomAgentOptions(
+  settings: NewWorktreeRuntimeSettings | null
+): NewWorktreeAgentOption[] {
+  return offerableCustomTuiAgents(
+    normalizeCustomTuiAgents(settings?.customTuiAgents),
+    settings?.disabledTuiAgents
+  ).map((custom) => ({
+    id: custom.agent,
+    label: custom.name,
+    customAgentId: custom.id,
+    detail: custom.command
+  }))
 }
 
 export const NEW_WORKTREE_AGENT_OPTIONS: NewWorktreeAgentOption[] = MOBILE_AGENT_CATALOG
@@ -35,14 +68,14 @@ export function pickPreferredNewWorktreeAgent(
   settings: NewWorktreeRuntimeSettings | null,
   detectedAgentIds: Set<string> | null
 ): NewWorktreeAgentOption {
-  return newWorktreeAgentOptionFor(
-    pickWorkspaceAgent(
-      {
-        defaultTuiAgent: settings?.defaultTuiAgent,
-        disabledTuiAgents: settings?.disabledTuiAgents
-      },
-      detectedAgentIds
-    )
+  const choice = pickWorkspaceAgent(settings ?? {}, detectedAgentIds)
+  const custom = parseCustomWorkspaceAgentChoice(choice)
+  return (
+    (custom &&
+      newWorktreeCustomAgentOptions(settings).find(
+        (option) => option.customAgentId === custom.customAgentId
+      )) ||
+    newWorktreeAgentOptionFor(custom ? custom.agent : choice)
   )
 }
 

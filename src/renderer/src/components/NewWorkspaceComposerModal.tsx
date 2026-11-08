@@ -1,4 +1,6 @@
+import { useComposerEnterSubmit } from './new-workspace/use-composer-enter-submit'
 import type { ComposerModalData } from './new-workspace/composer-modal-data'
+import { useDefaultCustomAgentDraft } from './new-workspace/use-default-custom-agent-draft'
 import { toast } from 'sonner'
 import {
   formatWorkspaceCreateError,
@@ -11,7 +13,7 @@ import type {
 import { DirectWorkItemSetupDialog } from './new-workspace/DirectWorkItemSetupDialog'
 import { agentChoicePending } from '@/lib/host-chat-program'
 import type { AgentLaunchSurface } from '@/lib/agent-session/launch/routing/agent-session-launch-plan'
-import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { Suspense, useCallback, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '@/store/index'
 import { lazyWithRetry } from '@/lib/lazy-with-retry'
 import {
@@ -34,8 +36,6 @@ import {
   resolveQuickWorkspaceAgentSelection
 } from '@/lib/quick-workspace-agent-selection'
 import { useAgentsOfferedForLaunch } from '@/lib/host-chat-program-acquisition'
-import { shouldAllowComposerEnterSubmitTarget } from '@/lib/new-workspace-enter-guard'
-import { isScreenSubmitShortcut } from '@/lib/screen-submit-shortcut'
 import type { TuiAgent } from '../../../shared/agent-launch/catalog/tui-agent'
 import { translate } from '@/i18n/i18n'
 import { useTranslate } from '@/i18n/use-translate'
@@ -43,14 +43,11 @@ import { getWorkspaceComposerInitialFocusTarget } from '@/lib/workspace-composer
 import '@/components/sidebar/workspace-creation/folder/folder-workspace-source-repos'
 import { getFolderWorkspacePrimaryActionLabel } from '@/components/sidebar/workspace-creation/folder/folder-workspace-source-selection'
 import { useAgentMenuObservation } from '@/components/tab-bar/use-new-tab-agent-menu-rows'
-import { addAppKeyListener, removeAppKeyListener } from '@/lib/app-keyboard-router'
 
 // Keep Add Project’s clone/SSH machinery outside the composer entry render, matching App loading.
 const HostedAddRepoDialog = lazyWithRetry(
   () => import('@/components/sidebar/project-admission/dialog/AddRepoDialog'),
-  {
-    reloadKey: 'composer-add-repo'
-  }
+  { reloadKey: 'composer-add-repo' }
 )
 
 export default function NewWorkspaceComposerModal(): React.JSX.Element | null {
@@ -80,11 +77,11 @@ function ComposerModalBody({
 }): React.JSX.Element {
   const dialogRef = useRef<HTMLDivElement>(null)
   const submitCancelledRef = useRef(false)
-  const handleDismiss = useCallback(() => {
+  const handleDismiss = () => {
     submitCancelledRef.current = true
     onClose()
-  }, [onClose])
-  const isSubmissionCancelled = useCallback(() => submitCancelledRef.current, [])
+  }
+  const isSubmissionCancelled = () => submitCancelledRef.current
 
   return (
     <Dialog open onOpenChange={(open) => !open && handleDismiss()}>
@@ -206,11 +203,13 @@ function QuickTabBody({
     cardProps.agentRows?.detectionTarget,
     { wakeOnOpen: true }
   )
+  const defaultCustomDraft = useDefaultCustomAgentDraft(settings, quickAgent, quickAgentOverride)
   const pickerDraft =
     quickAgentPick.agent === quickAgent && quickAgentPick.contextKey === observation.contextKey
       ? quickAgentPick.draft
-      : undefined
-  const quickAgentSurface = quickAgentPick.agent === quickAgent ? quickAgentPick.surface : undefined
+      : defaultCustomDraft
+  const quickAgentSurface =
+    quickAgentPick.agent === quickAgent ? quickAgentPick.surface : defaultCustomDraft?.surface
   const launchSelection = observation.selectionFor(quickAgent, quickAgentSurface)
   const createDisabled = formDisabled || !launchSelection.ready
 
@@ -327,32 +326,13 @@ function QuickTabBody({
 
   // Let Radix own Escape for the topmost layer. This dialog auto-focuses input, so page-style blur-first handling swallowed its first Escape.
   const nestedDialogOpen = agentSettingsOpen || addProjectOpen || setLocationOpen
-  useEffect(() => {
-    if (!active || nestedDialogOpen) {
-      // Nested dialogs own input; never submit the underlying composer through this capture handler.
-      return
-    }
-    const onKeyDown = (event: KeyboardEvent): void => {
-      // Creation uses the screen submit chord, outside configurable app commands.
-      if (!isScreenSubmitShortcut(event)) {
-        return
-      }
-      const target = event.target
-      if (!(target instanceof HTMLElement)) {
-        return
-      }
-      if (!shouldAllowComposerEnterSubmitTarget(target, composerRef.current)) {
-        return
-      }
-      if (createDisabled || composerRef.current?.hasAttribute('data-sparse-preset-editing')) {
-        return
-      }
-      event.preventDefault()
-      void handleCreate()
-    }
-    addAppKeyListener('keydown', onKeyDown)
-    return () => removeAppKeyListener('keydown', onKeyDown)
-  }, [active, composerRef, createDisabled, handleCreate, nestedDialogOpen])
+  useComposerEnterSubmit({
+    active,
+    nestedDialogOpen,
+    createDisabled,
+    composerRef,
+    onCreate: handleCreate
+  })
 
   return (
     <>

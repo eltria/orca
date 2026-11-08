@@ -33,6 +33,8 @@ export function readAgentLaunchSupport(
 
 export type WorktreeCreateAgentLaunch = {
   agent: TuiAgent
+  /** A custom agent of the host; only agent.launch starts it, so a create never downgrades. */
+  customAgentId?: string
   supported: AgentLaunchSupport | false | Promise<AgentLaunchSupport | false>
 }
 
@@ -44,10 +46,12 @@ export type AgentLaunchCreateOutcome = {
 export function agentLaunchCreateParams(
   agent: TuiAgent,
   create: WorkspaceCreateParams,
-  operationId?: string | null
+  operationId?: string | null,
+  customAgentId?: string
 ): RpcSendParams<'agent.launch'> {
   return {
     agent,
+    ...(customAgentId ? { customAgentId } : {}),
     ...(operationId ? { operationId } : {}),
     target: { kind: 'create-worktree', create: withoutReservedAgentCreateFields(create) }
   }
@@ -56,6 +60,7 @@ export function agentLaunchCreateParams(
 // Use the separate replay method: older hosts would strip operationId from agent.launch and run an unprotected duplicate.
 export function agentLaunchExistingParams(args: {
   agent: TuiAgent
+  customAgentId?: string
   worktreeId: string
   operationId: string
   prompt?: AgentLaunchPrompt
@@ -70,6 +75,7 @@ export function agentLaunchExistingParams(args: {
 }): RpcSendParams<'agent.launchReplay'> {
   return {
     agent: args.agent,
+    ...(args.customAgentId ? { customAgentId: args.customAgentId } : {}),
     ...(args.agentArgs !== undefined ? { agentArgs: args.agentArgs } : {}),
     ...(args.surface ? { surface: args.surface } : {}),
     operationId: args.operationId,

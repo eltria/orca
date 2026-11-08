@@ -18,6 +18,7 @@ const editsSchema = z
     name: z.string(),
     prompt: z.string(),
     agentId: z.string().nullable(),
+    customAgentId: z.string(),
     surface: z.string(),
     setupId: z.string(),
     workspaceId: z.string(),

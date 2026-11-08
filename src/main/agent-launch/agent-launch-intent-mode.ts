@@ -32,7 +32,12 @@ export function decideAgentLaunchIntentMode(execution: {
     },
     settings: execution.terminalOnly ? undefined : readAgentLaunchModeSettings(runtime, intent),
     ...(execution.terminalOnly ? { terminalOnly: true } : {}),
-    ...(intent.surface ? { surface: intent.surface } : {}),
+    // A custom agent's command runs in a terminal; a chat would run the base agent's own program.
+    ...(intent.customAgentId
+      ? { surface: 'terminal' as const }
+      : intent.surface
+        ? { surface: intent.surface }
+        : {}),
     vocabulary: execution.vocabulary ?? DEFAULT_LAUNCH_VOCABULARY
   })
 }

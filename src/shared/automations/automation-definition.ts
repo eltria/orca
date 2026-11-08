@@ -30,6 +30,8 @@ export type Automation = {
   prompt: string
   precheck: AutomationPrecheck | null
   agentId: TuiAgent
+  /** A custom agent of the storing host's settings for `agentId`; runs start its command in a terminal. */
+  customAgentId?: string
   surface?: 'chat' | 'terminal'
   launchSetup?: AutomationLaunchSetup
   launchPreferences?: AutomationLaunchPreferences
@@ -78,6 +80,7 @@ export type AutomationCreateInput = {
   prompt: string
   precheck?: AutomationPrecheck | null
   agentId: TuiAgent
+  customAgentId?: string
   launchSetupPatch?: AutomationLaunchSetupPatch
   /** Empty or whitespace means no extras. */
   extraAgentArgs?: string
@@ -99,7 +102,11 @@ export type AutomationCreateInput = {
   missedRunGraceMinutes?: number
 }
 
-export type AutomationUpdateInput = { launchSetupPatch?: AutomationLaunchSetupPatch } & Partial<
+export type AutomationUpdateInput = {
+  launchSetupPatch?: AutomationLaunchSetupPatch
+  /** null clears it; a new agentId without one also clears it. */
+  customAgentId?: string | null
+} & Partial<
   Pick<
     Automation,
     | 'name'

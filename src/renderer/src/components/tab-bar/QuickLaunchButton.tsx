@@ -18,7 +18,6 @@ import { activeAgentNotesSendFailureMessage } from '@/lib/active-agent-note-send
 import { AgentSettingsMenuItem } from '@/components/agent/AgentSettingsMenuItem'
 import { TabAgentSurfaceChoiceRow } from './TabAgentSurfaceChoiceRow'
 import { CustomAgentMenuItems } from './CustomAgentMenuItems'
-import { AgentSurfaceLaunchButton } from '@/components/agent/AgentSurfaceLaunchButton'
 import {
   DropdownMenuItem,
   DropdownMenuSeparator,
@@ -104,7 +103,7 @@ export function useTabAgentMenuLaunch({
             }
           : {}),
         agent,
-        ...(custom ? { launchCommand: custom.command, quickCommandLabel: custom.name } : {}),
+        ...(custom ? { customAgentId: custom.id, quickCommandLabel: custom.name } : {}),
         ...(draft
           ? agentPickerFreshLaunchInputs(
               draft,
@@ -334,7 +333,7 @@ export function ProjectedAgentMenuItems({
           )
         })
       )}
-      <CustomAgentMenuItems {...{ rows, detectedIds, disabled, runLaunch }} />
+      <CustomAgentMenuItems {...{ rows, detectedIds, disabled, runLaunch, pickerInventory }} />
       <AgentSettingsMenuItem onSelect={openAgentSettings} />
     </>
   )

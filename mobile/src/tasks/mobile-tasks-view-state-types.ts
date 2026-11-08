@@ -51,6 +51,9 @@ export type TaskResumeState = {
 export type RuntimeTaskSettings = {
   defaultTuiAgent?: TuiAgent | 'blank' | null
   disabledTuiAgents?: TuiAgent[]
+  /** The host's custom agents and its default one, unvalidated until read. */
+  customTuiAgents?: unknown
+  defaultCustomTuiAgentId?: unknown
   agentCmdOverrides?: Record<string, string>
   defaultTaskSource?: TaskProvider
   defaultTaskViewPreset?: GitHubPreset | 'all'

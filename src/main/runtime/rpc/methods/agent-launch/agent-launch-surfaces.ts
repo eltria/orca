@@ -131,7 +131,8 @@ export function agentLaunchSurfaceFactory(
       paneKey,
       options,
       viewMode,
-      accountEnv
+      accountEnv,
+      customAgentId
     }) => {
       const launchPreferences = toAgentLaunchPreferences(options, agent)
       const attributedLaunchSource = callerLaunchSource(context, launchSource)
@@ -146,6 +147,7 @@ export function agentLaunchSurfaceFactory(
         wslUserAct: true,
         // Let the runtime build the configured launcher: agent ids are not commands (cursor uses cursor-agent).
         startupAgent: agent,
+        ...(customAgentId ? { startupCustomAgentId: customAgentId } : {}),
         terminalImageViewerSupported: terminalImageViewerSupported(context),
         // The runtime reports typed-line prompt carry; paste only when the command did not carry it.
         ...(startupPrompt

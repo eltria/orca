@@ -18,6 +18,7 @@ export function buildAutomationEditDraft(automation: Automation): AutomationDraf
     name: automation.name,
     prompt: automation.prompt,
     agentId: automation.agentId,
+    ...(automation.customAgentId ? { customAgentId: automation.customAgentId } : {}),
     surface: automation.launchSetup?.surface ?? automation.surface ?? 'terminal',
     extraAgentArgs: setup.extraAgentArgs ?? '',
     ...(setup.launchPreferences !== undefined

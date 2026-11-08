@@ -47,6 +47,7 @@ import {
 import { readNativeDetectedAgents } from '@/store/slices/agent-inventory/local-detected-agent-store-state'
 import { useDetectedAgents, type AgentDetectionTarget } from '@/hooks/useDetectedAgents'
 import { AgentDefaultSetting } from '@/components/settings/agents/launch/AgentDefaultSetting'
+import { defaultAgentSettingHandlers } from '@/components/settings/agents/launch/default-agent-setting-handlers'
 import { CustomTuiAgentsSection } from '@/components/settings/agents/launch/CustomTuiAgentsSection'
 import { AgentDetectionCatalog } from '@/components/settings/agents/launch/AgentDetectionCatalog'
 import type { AgentCatalogRowProps } from '@/components/settings/agents/launch/AgentCatalogRow'
@@ -339,7 +340,9 @@ export function AgentLaunchSettingsCatalog({
           'settings.agents.hostDefaults',
           'Defaults for new agents on the selected host.'
         )}
-        onSetDefault={(agent) => save({ type: 'default', agent })}
+        {...defaultAgentSettingHandlers(local, settings.defaultTuiAgent, (agent) =>
+          save({ type: 'default', agent })
+        )}
         defaultOpensAsChat={defaultOpensAsChat}
         permissions={
           permissionSettings ? (

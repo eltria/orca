@@ -14,6 +14,8 @@ export async function createBlankWorkspace(args: {
   repoId: string
   baseName: string
   createdWithAgentId: TuiAgent | undefined
+  /** A custom agent of the host for `createdWithAgentId`. */
+  customAgentId?: string
   comment: string | undefined
   setupDecision: WorkspaceCreateSetupDecision
   // Only generated creature names may be permanently retired by the host.
@@ -22,7 +24,11 @@ export async function createBlankWorkspace(args: {
   agentLaunchSupported: WorktreeCreateAgentLaunch['supported']
 }): Promise<WorktreeCreateResult> {
   const agentLaunch: WorktreeCreateAgentLaunch | undefined = args.createdWithAgentId
-    ? { agent: args.createdWithAgentId, supported: args.agentLaunchSupported }
+    ? {
+        agent: args.createdWithAgentId,
+        ...(args.customAgentId ? { customAgentId: args.customAgentId } : {}),
+        supported: args.agentLaunchSupported
+      }
     : undefined
   return createWorktreeWithNameRetry({
     client: args.client,

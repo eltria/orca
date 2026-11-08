@@ -36,6 +36,7 @@ const initialProjects: Pick<Project, 'id' | 'localWindowsRuntimePreference'>[] =
 
 const settings: {
   agentCmdOverrides: Record<string, string>
+  customTuiAgents?: { id: string; name: string; agent: 'claude'; command: string }[]
   agentDefaultArgs: Record<string, string>
   agentDefaultEnv: Record<string, Record<string, string>>
   activeRuntimeEnvironmentId: string | null
@@ -118,9 +119,10 @@ vi.mock('@/runtime/rpc/calls/runtime-rpc-call', () => ({
   callRuntimeRpc: vi.fn()
 }))
 vi.mock('@/store/index', () => ({
-  useAppStore: {
+  // Callable too: picker menus subscribe to the configured custom agents.
+  useAppStore: Object.assign((selector: (state: typeof store) => unknown) => selector(store), {
     getState: () => store
-  }
+  })
 }))
 
 export const mockToastError = vi.fn<typeof toast.error>()

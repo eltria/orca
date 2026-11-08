@@ -79,6 +79,8 @@ export async function launchAgentInExistingWorkspace(args: {
   hostCapabilities: readonly string[] | null | undefined
   worktreeId: string
   agent: TuiAgent
+  /** A custom agent of the host's settings; its command starts in a terminal. */
+  customAgentId?: string
   agentArgs?: string
   surface?: 'chat' | 'terminal'
   prompt?: AgentLaunchPrompt
@@ -95,6 +97,7 @@ export async function launchAgentInExistingWorkspace(args: {
   }
   const params = agentLaunchExistingParams({
     agent: args.agent,
+    ...(args.customAgentId ? { customAgentId: args.customAgentId } : {}),
     agentArgs: args.agentArgs,
     ...(args.surface && args.hostCapabilities?.includes(AGENT_LAUNCH_SURFACE_RUNTIME_CAPABILITY)
       ? { surface: args.surface }

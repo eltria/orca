@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { AgentIcon, getAgentLabel } from '@/lib/agent-catalog'
+import { useAppStore } from '@/store'
 import { useTranslate } from '@/i18n/use-translate'
 import { rowLabel } from '../tab-bar/tab-agent-row-presentation'
 import type { NewTabAgentMenuModel } from '../tab-bar/use-new-tab-agent-menu-rows'
@@ -59,6 +60,7 @@ export const AgentLaunchPicker = memo(
     onOpenAgentSettings,
     defaultAgent,
     onSetDefault,
+    includeCustomAgents,
     onPick
   }: {
     model: NewTabAgentMenuModel
@@ -85,6 +87,8 @@ export const AgentLaunchPicker = memo(
     /** The saved default; with onSetDefault, right-clicking an agent row offers "Set as default". */
     defaultAgent?: AgentPickerEntry['agent'] | 'blank' | null
     onSetDefault?: (agent: AgentPickerEntry['agent']) => void
+    /** Lists custom agents; the picked draft then carries `customAgentId`, which the caller must launch. */
+    includeCustomAgents?: boolean
     onPick: (
       agent: AgentPickerEntry['agent'],
       draft?: AgentPickerDraft,
@@ -162,6 +166,10 @@ export const AgentLaunchPicker = memo(
         onCatalogOpen?.(catalogAgent)
       }
     }, [catalogAgent, onCatalogOpen])
+    const customAgents = useAppStore((state) => state.settings?.customTuiAgents)
+    const pickedCustom = value?.customAgentId
+      ? customAgents?.find((custom) => custom.id === value.customAgentId && custom.agent === agent)
+      : undefined
     const entry = entries.find((entry) => entry.agent === agent)
     const draft = entry ? (value ?? draftForEntry?.(entry)) : undefined
     const choices = entry
@@ -174,11 +182,13 @@ export const AgentLaunchPicker = memo(
           )?.label
         : undefined) ?? choices?.model
     const summary = [modelLabel, choices?.options?.effort].filter(Boolean).join(' · ')
-    const agentLabel = agent
-      ? cli
-        ? rowLabel({ kind: 'cli', agent }, t)
-        : getAgentLabel(agent)
-      : (emptyLabel ?? t('agentPicker.select', 'Select agent'))
+    const agentLabel = pickedCustom
+      ? pickedCustom.name
+      : agent
+        ? cli
+          ? rowLabel({ kind: 'cli', agent }, t)
+          : getAgentLabel(agent)
+        : (emptyLabel ?? t('agentPicker.select', 'Select agent'))
     return (
       <div className="space-y-2">
         <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -257,6 +267,7 @@ export const AgentLaunchPicker = memo(
                 onSelectAgent={selectAgent}
                 defaultAgent={defaultAgent}
                 onSetDefault={onSetDefault}
+                includeCustomAgents={includeCustomAgents}
                 runLaunch={runLaunch}
               />
             ) : (

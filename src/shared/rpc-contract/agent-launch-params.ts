@@ -108,7 +108,10 @@ export const AgentLaunchFields = z.object({
   nativeChatDefault: z.boolean().optional(),
   /** Explicit terminal runs CLI; proven-unsupported chat refuses before creation. Inside replay identity; unknown
    * values refuse. Clients must gate on agent.launch.surface.v1 because older hosts strip this field. */
-  surface: z.enum(AGENT_LAUNCH_SURFACES).optional()
+  surface: z.enum(AGENT_LAUNCH_SURFACES).optional(),
+  /** A custom agent of the host's settings, named by id so a client never sends a command; terminal only.
+   * Older hosts strip it and start the plain agent. */
+  customAgentId: z.string().min(1).max(80).optional()
 })
 
 /** Caller IDs must retain the agent lane encoded by host-minted IDs. */

@@ -45,6 +45,8 @@ export type AutomationDraft = {
   name: string
   prompt: string
   agentId: TuiAgent
+  /** A custom agent of the automation's host for `agentId`; it runs in a terminal. */
+  customAgentId?: string
   surface?: 'chat' | 'terminal'
   /** Saved as-is; empty means none. */
   extraAgentArgs: string

@@ -1,4 +1,8 @@
 import type { ProjectMetadataLoadingModel } from './use-mobile-tasks-project-metadata-loading'
+import {
+  normalizeCustomTuiAgents,
+  offerableCustomTuiAgents
+} from '../../../src/shared/agent-launch/catalog/custom-tui-agents'
 import { useMobileTranslation } from '../i18n/use-mobile-translation'
 import {
   type BaseRefSearchResult,
@@ -7,7 +11,9 @@ import {
   type WorkspaceAgentChoice,
   deriveWorkspaceSshGate,
   filterWorkspaceAgents,
-  isWorkspaceAgentEnabled,
+  isWorkspaceChoiceAvailable,
+  workspaceChoiceAgent,
+  customWorkspaceAgentChoice,
   parseSparsePresetDirectories,
   resolveComposerBranchSelection,
   useCallback,
@@ -151,13 +157,16 @@ export function useMobileTasksWorkspaceCreateProjection(model: ProjectMetadataLo
       workspaceDetectedAgentIds === null
         ? new Set<TuiAgent>(enabledAgents)
         : new Set<TuiAgent>(enabledAgents.filter((agent) => workspaceDetectedAgentIds.has(agent)))
+    const chosenAgent = workspaceAgent ? workspaceChoiceAgent(workspaceAgent) : null
     if (
-      workspaceAgent &&
-      workspaceAgent !== 'blank' &&
-      isWorkspaceAgentEnabled(workspaceAgent, runtimeTaskSettings.disabledTuiAgents) &&
-      (workspaceDetectedAgentIds === null || workspaceDetectedAgentIds.has(workspaceAgent))
+      chosenAgent &&
+      isWorkspaceChoiceAvailable(
+        chosenAgent,
+        runtimeTaskSettings.disabledTuiAgents,
+        workspaceDetectedAgentIds
+      )
     ) {
-      availableAgents.add(workspaceAgent)
+      availableAgents.add(chosenAgent)
     }
     const agents = MOBILE_TUI_AGENT_AUTO_PICK_ORDER.filter((agent) => availableAgents.has(agent))
     return [
@@ -167,6 +176,15 @@ export function useMobileTasksWorkspaceCreateProjection(model: ProjectMetadataLo
         subtitle: agent,
         renderIcon: () => <MobileAgentIcon agentId={workspaceAgentIconId(agent)} size={18} />
       })),
+      ...offerableCustomTuiAgents(
+        normalizeCustomTuiAgents(runtimeTaskSettings.customTuiAgents),
+        runtimeTaskSettings.disabledTuiAgents
+      ).map((custom) => ({
+        value: customWorkspaceAgentChoice(custom.agent, custom.id),
+        label: custom.name,
+        subtitle: custom.command,
+        renderIcon: () => <MobileAgentIcon agentId={custom.agent} size={18} />
+      })),
       {
         value: 'blank' as const,
         label: workspaceAgentLabel('blank'),
@@ -174,7 +192,13 @@ export function useMobileTasksWorkspaceCreateProjection(model: ProjectMetadataLo
         renderIcon: () => <MobileAgentIcon agentId="__blank__" size={18} />
       }
     ]
-  }, [runtimeTaskSettings.disabledTuiAgents, t, workspaceAgent, workspaceDetectedAgentIds])
+  }, [
+    runtimeTaskSettings.customTuiAgents,
+    runtimeTaskSettings.disabledTuiAgents,
+    t,
+    workspaceAgent,
+    workspaceDetectedAgentIds
+  ])
   const openWorkspaceCreate = useCallback((item: ActionableTaskItem, repoIdOverride?: string) => {
     const suggestedName = taskWorkspaceSuggestedName(item)
     setWorkspaceCreateDraft({ item, ...(repoIdOverride ? { repoIdOverride } : {}) })

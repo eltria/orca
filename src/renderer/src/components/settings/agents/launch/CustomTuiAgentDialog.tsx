@@ -18,7 +18,7 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { AgentIcon, getAgentCatalog } from '@/lib/agent-catalog'
-import { translate } from '@/i18n/i18n'
+import { useTranslate } from '@/i18n/use-translate'
 import { useUiLanguageRevision } from '@/i18n/use-ui-language-revision'
 import type { CustomTuiAgent } from '../../../../../../shared/agent-launch/catalog/custom-tui-agents'
 import type { TuiAgent } from '../../../../../../shared/agent-launch/catalog/tui-agent'
@@ -41,6 +41,7 @@ export function CustomTuiAgentDialog({
   onOpenChange: (open: boolean) => void
   onSave: (agent: CustomTuiAgent) => void
 }): React.JSX.Element {
+  const t = useTranslate()
   useUiLanguageRevision()
   const [draft, setDraft] = useState(initial)
   const nameId = useId()
@@ -61,11 +62,11 @@ export function CustomTuiAgentDialog({
         <DialogHeader>
           <DialogTitle>
             {mode === 'edit'
-              ? translate('settings.agents.customAgents.editTitle', 'Edit custom agent')
-              : translate('settings.agents.customAgents.addTitle', 'Add custom agent')}
+              ? t('settings.agents.customAgents.editTitle', 'Edit custom agent')
+              : t('settings.agents.customAgents.addTitle', 'Add custom agent')}
           </DialogTitle>
           <DialogDescription>
-            {translate(
+            {t(
               'settings.agents.customAgents.dialogDescription',
               'It launches like its base agent, with your command in place of the base agent’s.'
             )}
@@ -79,7 +80,7 @@ export function CustomTuiAgentDialog({
           }}
         >
           <div className="space-y-2">
-            <Label htmlFor={nameId}>{translate('settings.agents.customAgents.name', 'Name')}</Label>
+            <Label htmlFor={nameId}>{t('settings.agents.customAgents.name', 'Name')}</Label>
             <Input
               id={nameId}
               autoFocus
@@ -89,7 +90,7 @@ export function CustomTuiAgentDialog({
           </div>
           <div className="space-y-2">
             <Label htmlFor={agentId}>
-              {translate('settings.agents.customAgents.baseAgent', 'Base agent')}
+              {t('settings.agents.customAgents.baseAgent', 'Base agent')}
             </Label>
             <Select
               value={draft.agent}
@@ -114,7 +115,7 @@ export function CustomTuiAgentDialog({
           </div>
           <div className="space-y-2">
             <Label htmlFor={commandId}>
-              {translate('settings.agents.customAgents.command', 'Command')}
+              {t('settings.agents.customAgents.command', 'Command')}
             </Label>
             <Input
               id={commandId}
@@ -129,7 +130,7 @@ export function CustomTuiAgentDialog({
               onChange={(event) => setDraft({ ...draft, command: event.target.value })}
             />
             <p id={commandHintId} className="text-[11px] text-muted-foreground">
-              {translate(
+              {t(
                 'settings.agents.customAgents.commandHint',
                 'Runs instead of the base agent’s command, such as a wrapper that sets its API endpoint and execs it. Orca’s own arguments follow it.'
               )}
@@ -137,10 +138,10 @@ export function CustomTuiAgentDialog({
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              {translate('settings.agents.customAgents.cancel', 'Cancel')}
+              {t('settings.agents.customAgents.cancel', 'Cancel')}
             </Button>
             <Button type="submit" disabled={!canSave}>
-              {translate('settings.agents.customAgents.save', 'Save')}
+              {t('settings.agents.customAgents.save', 'Save')}
             </Button>
           </DialogFooter>
         </form>

@@ -1,4 +1,5 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useHostCustomAgents } from '../../session/use-host-custom-agents'
 import { Alert, View, Text, Pressable } from 'react-native'
 import { ChevronLeft } from 'lucide-react-native'
 import { colors, radii, spacing } from '../../theme/mobile-theme'
@@ -43,6 +44,7 @@ export function QuickCommandsSheet({
 }: Props) {
   useMobileColorScheme()
   const t = useMobileTranslation()
+  const customAgents = useHostCustomAgents(client, visible)
   const { commands, loading, ready, error, persist } = useQuickCommands({
     client,
     enabled: visible
@@ -223,12 +225,18 @@ export function QuickCommandsSheet({
           onEdit={openEditor}
           onDelete={handleDelete}
           onAdd={() => openEditor()}
+          customAgents={customAgents}
         />
       ) : null}
 
       {view === 'editor' && draft ? (
         <QuickCommandEditorForm
           draft={draft}
+          customAgentName={
+            draft.customAgentId
+              ? customAgents.find((entry) => entry.id === draft.customAgentId)?.name
+              : undefined
+          }
           mode={draft.id ? 'edit' : 'add'}
           saving={saving || !ready}
           error={error}
@@ -255,9 +263,17 @@ export function QuickCommandsSheet({
       {view === 'agent' && draft ? (
         <QuickCommandAgentPicker
           selected={draft.agent}
-          onSelect={(agent) => {
+          selectedCustomAgentId={draft.customAgentId}
+          customAgents={customAgents}
+          onSelect={(agent, customAgentId) => {
             draftRevisionRef.current += 1
-            setDraft((current) => (current ? { ...current, agent } : current))
+            setDraft((current) => {
+              if (!current) {
+                return current
+              }
+              const { customAgentId: _previous, ...rest } = current
+              return { ...rest, agent, ...(customAgentId ? { customAgentId } : {}) }
+            })
             setView('editor')
           }}
         />

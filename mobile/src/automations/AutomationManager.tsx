@@ -18,7 +18,7 @@ import { AutomationEditor } from './AutomationEditor'
 import { leaveThrough, type AutomationLeaveSlot } from './AutomationEditorNavigation'
 import { AutomationRunList } from './AutomationRunList'
 import { AutomationRunDetails } from './AutomationRunDetails'
-import type { MobileAutomationRow, MobileAutomationRun } from './automation-reply-schema'
+import type { MobileAutomationRow } from './automation-reply-schema'
 import {
   automationDeleteWrite,
   automationRunWrite,
@@ -31,12 +31,7 @@ import { useAutomationCatalog } from './use-automation-catalog'
 import { automationEditorDraftKey, dropAutomationEditorDraft } from './automation-editor-draft-row'
 import { automationStyles as styles } from './automation-styles'
 
-type AutomationView =
-  | { kind: 'list' }
-  | { kind: 'detail'; row: MobileAutomationRow }
-  | { kind: 'editor'; row?: MobileAutomationRow; initialDraft?: AutomationDraft }
-  | { kind: 'run'; run: MobileAutomationRun; scope: AutomationRunScope }
-const ACTION_OPTIONS = { failWhenDisconnected: true }
+import { ACTION_OPTIONS, type AutomationView } from './automation-manager-view'
 
 export function AutomationManager(props: {
   client: RpcClient | null
@@ -289,6 +284,7 @@ export function AutomationManager(props: {
             draftKey={automationEditorDraftKey(props.executionHost, view.row?.automation.id)}
             onDraftChange={createAttempt.observeDraft}
             leaveGuard={props.leaveGuard}
+            offerCustomAgents={!props.executionHost}
             capabilities={catalog.capabilities}
             busy={catalog.busy}
             connected={catalog.connected}

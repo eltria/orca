@@ -202,6 +202,7 @@ export async function prepareDirectWorkItemAgentLaunch(args: {
         agent: effectiveAgent,
         agentArgs,
         sessionOptions,
+        ...(inputs?.customAgentId ? { customAgentId: inputs.customAgentId } : {}),
         sessionOptionsYieldToAgentArgs: args.sessionOptionsYieldToAgentArgs,
         draftContent: args.draftContent,
         promptDelivery: args.promptDelivery,

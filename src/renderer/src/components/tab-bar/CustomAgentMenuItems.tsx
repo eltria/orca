@@ -1,43 +1,41 @@
-import { DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
-import { AgentIcon } from '@/lib/agent-catalog'
+import { DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { useAppStore } from '@/store'
 import type { NewTabAgentMenuRow } from '../../../../shared/agent-launch/picker/agent-launch-picker-rows'
 import type { TuiAgent } from '../../../../shared/agent-launch/catalog/tui-agent'
-import { customAgentMenuRow, launchableCustomAgents } from './custom-agent-menu-rows'
+import { customAgentMenuRow, launchableCustomAgents } from '../agent/custom-agent-picker-rows'
+import { CustomAgentMenuItem } from '../agent/CustomAgentMenuItem'
+import type { AgentPickerInventorySource } from '../agent/agent-launch-picker-acquisition'
 
+/** Custom agents in a menu built from rows; a menu with a picker inventory lists its own. */
 export function CustomAgentMenuItems({
   rows,
   detectedIds,
   disabled,
-  runLaunch
+  runLaunch,
+  pickerInventory
 }: {
   rows: readonly NewTabAgentMenuRow[]
   detectedIds: readonly TuiAgent[] | null
   disabled: boolean
   runLaunch: (row: NewTabAgentMenuRow) => unknown
+  pickerInventory?: AgentPickerInventorySource
 }): React.JSX.Element | null {
   const customAgents = useAppStore((state) => state.settings?.customTuiAgents)
   const launchable = launchableCustomAgents(customAgents, detectedIds)
-  if (launchable.length === 0) {
+  if (pickerInventory || launchable.length === 0) {
     return null
   }
   return (
     <>
       <DropdownMenuSeparator />
       {launchable.map((custom) => (
-        <DropdownMenuItem
+        <CustomAgentMenuItem
           key={custom.id}
+          custom={custom}
           variant="launch"
           disabled={disabled}
-          title={custom.command}
           onSelect={() => runLaunch(customAgentMenuRow(custom, rows))}
-        >
-          <AgentIcon agent={custom.agent} size={14} />
-          <span className="min-w-0 flex-1 truncate">{custom.name}</span>
-          <span className="max-w-32 truncate font-mono text-[11px] font-normal text-muted-foreground">
-            {custom.command}
-          </span>
-        </DropdownMenuItem>
+        />
       ))}
     </>
   )

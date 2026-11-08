@@ -1,4 +1,5 @@
 import { AutomationDraftReview } from './AutomationDraftReview'
+import { automationAgentPatch, useAutomationAgentChoice } from './automation-agent-options'
 import {
   AutomationEditorHeader,
   AutomationEditorNavigation,
@@ -12,7 +13,6 @@ import { useAutomationTargetDrafts } from './use-automation-target-drafts'
 import { Text, View } from 'react-native'
 import type { RpcClient } from '../transport/rpc/rpc-client-contract'
 import type { MobileAutomation } from './automation-reply-schema'
-import { mobileTuiAgentLabel } from '../tasks/mobile-tui-agents'
 import type { MobileNewTabAgentOption } from '../session/agent-launch/mobile-new-tab-agent-options'
 import { AutomationAdvancedFields } from './AutomationAdvancedFields'
 import { AutomationButton, AutomationChoice, AutomationField } from './AutomationControls'
@@ -45,6 +45,8 @@ export function AutomationEditor(props: {
   capabilities: readonly string[]
   onCancel: () => void
   leaveGuard?: AutomationLeaveSlot
+  /** Custom agents live in the paired desktop's settings; a server's automations cannot read them. */
+  offerCustomAgents?: boolean
   onSave: (draft: AutomationDraft, original: AutomationDraft, targets: AutomationTargets) => void
 }) {
   const t = useMobileTranslation()
@@ -159,18 +161,13 @@ export function AutomationEditor(props: {
     props.onDraftChange(draft)
   }, [draft, props.onDraftChange])
 
-  const agentOptions: { value: string; label: string }[] = agents.map((option) => ({
-    value: option.agent,
-    label: option.label
-  }))
-  if (draft.agentId && !agentOptions.some((option) => option.value === draft.agentId)) {
-    agentOptions.unshift({
-      value: draft.agentId,
-      label: t('automations.mobile.savedAgent', '{{agent}} (saved)', {
-        agent: mobileTuiAgentLabel(draft.agentId)
-      })
-    })
-  }
+  const agentChoice = useAutomationAgentChoice(
+    props.client,
+    agents,
+    props.offerCustomAgents,
+    draft,
+    (agent) => t('automations.mobile.savedAgent', '{{agent}} (saved)', { agent })
+  )
   function change(patch: Partial<AutomationDraft>) {
     setDraft((current) => ({
       ...current,
@@ -351,12 +348,12 @@ export function AutomationEditor(props: {
                 ? t('automations.mobile.agentDetecting', 'Agent · detecting…')
                 : t('automations.mobile.agent', 'Agent')
             }
-            value={draft.agentId ?? ''}
-            options={agentOptions}
+            value={agentChoice.value}
+            options={agentChoice.options}
             onSelect={(value) => {
-              const agent = agentOptions.find((option) => option.value === value)
+              const agent = agentChoice.options.find((option) => option.value === value)
               if (agent) {
-                change({ agentId: agent.value })
+                change(automationAgentPatch(agent.value))
               }
             }}
             disabled={disabled || agentsLoading}
@@ -389,7 +386,12 @@ export function AutomationEditor(props: {
       ) : step === 2 ? (
         <AutomationScheduleFields draft={draft} change={change} disabled={disabled} />
       ) : (
-        <AutomationDraftReview draft={draft} setup={setup} workspaces={workspaces} />
+        <AutomationDraftReview
+          draft={draft}
+          agentLabel={agentChoice.label}
+          setup={setup}
+          workspaces={workspaces}
+        />
       )}
       <AutomationEditorNavigation
         step={step}

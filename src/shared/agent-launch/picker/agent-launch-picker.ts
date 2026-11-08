@@ -51,6 +51,8 @@ export type AgentPickerDraft = {
   agent: TuiAgent
   surface: AgentPickerSurface
   choices: AgentDedicatedChoices
+  /** Picked as one of the custom agents backed by `agent`; launches its command in a terminal. */
+  customAgentId?: string
   argumentsOwner?: string
   arguments?: string | null
   pendingArguments?: string
@@ -242,12 +244,18 @@ export function agentPickerLaunchInputs(draft: AgentPickerDraft, entry?: AgentPi
         ...agentPickerOptions(draft.agent, choices.model, 'terminal').map((option) => option.id)
       ])
     })
-  return projectAgentLaunchInputViews(draft.agent, choices, result, {
+  const views = projectAgentLaunchInputViews(draft.agent, choices, result, {
     ...(authorized && draft.arguments !== undefined ? { agentArgs: draft.arguments } : {}),
     modelContext: entry?.terminal.model,
     sourceKeys: current?.context.literalKeys,
     permissionContext: entry?.terminal.permissionMode
   })
+  return draft.customAgentId ? { ...views, customAgentId: draft.customAgentId } : views
+}
+
+/** The draft a custom agent row picks: its base agent, in a terminal, with no other choices. */
+export function customAgentPickerDraft(custom: { id: string; agent: TuiAgent }): AgentPickerDraft {
+  return { agent: custom.agent, surface: 'terminal', choices: {}, customAgentId: custom.id }
 }
 
 export function agentPickerFreshLaunchInputs(

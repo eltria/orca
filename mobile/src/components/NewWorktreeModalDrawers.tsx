@@ -1,4 +1,5 @@
 import { View } from 'react-native'
+import { newWorktreeAgentOptionKey } from './new-worktree-agent-selection'
 import { getRepoExecutionHostId } from '../../../src/shared/execution-host'
 import { useMobileTranslation } from '../i18n/use-mobile-translation'
 import type { SmartModeAvailabilityInput } from '../tasks/mobile-smart-source-modes'
@@ -102,11 +103,15 @@ export function NewWorktreeModalDrawers(props: {
       <PickerListDrawer
         visible={props.visible && props.drawerView === 'agent'}
         title={t('components.newWorktreeModalDrawers.agent', 'Agent')}
-        items={props.pickerAgentOptions}
-        selectedId={props.selectedAgent.id}
-        onSelect={props.onAgentChange}
+        items={props.pickerAgentOptions.map((option) => ({
+          ...option,
+          id: newWorktreeAgentOptionKey(option),
+          option
+        }))}
+        selectedId={newWorktreeAgentOptionKey(props.selectedAgent)}
+        onSelect={(item) => props.onAgentChange(item.option)}
         onClose={props.onTransitionToForm}
-        renderIcon={(agent) => <MobileAgentIcon agentId={agent.id} size={20} />}
+        renderIcon={(item) => <MobileAgentIcon agentId={item.option.id} size={20} />}
       />
 
       <OrcaHookTrustDrawer

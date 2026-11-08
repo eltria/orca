@@ -1,4 +1,5 @@
 import { View, Text, Pressable, StyleSheet, ActivityIndicator } from 'react-native'
+import type { CustomTuiAgent } from '../../../../src/shared/agent-launch/catalog/custom-tui-agents'
 import { Check, Plus, Search } from 'lucide-react-native'
 import { colors, radii, spacing } from '../../theme/mobile-theme'
 import { themedStyleSheet } from '../../theme/themed-styles'
@@ -26,6 +27,7 @@ type ListProps = {
   query: string
   loading: boolean
   disabled: boolean
+  customAgents: readonly CustomTuiAgent[]
   error: string | null
   onQueryChange: (value: string) => void
   onLaunch: (command: TerminalQuickCommand) => void
@@ -46,7 +48,8 @@ export function QuickCommandsList({
   onLaunch,
   onEdit,
   onDelete,
-  onAdd
+  onAdd,
+  customAgents
 }: ListProps) {
   useMobileColorScheme()
   const t = useMobileTranslation()
@@ -96,6 +99,7 @@ export function QuickCommandsList({
           onEdit={onEdit}
           onDelete={onDelete}
           disabled={disabled}
+          customAgents={customAgents}
         />
       ) : null}
 
@@ -107,6 +111,7 @@ export function QuickCommandsList({
           onEdit={onEdit}
           onDelete={onDelete}
           disabled={disabled}
+          customAgents={customAgents}
         />
       ) : null}
 
@@ -135,7 +140,8 @@ function QuickCommandGroup({
   onLaunch,
   onEdit,
   onDelete,
-  disabled
+  disabled,
+  customAgents
 }: {
   label: string
   commands: TerminalQuickCommand[]
@@ -143,6 +149,7 @@ function QuickCommandGroup({
   onEdit: (command: TerminalQuickCommand) => void
   onDelete: (command: TerminalQuickCommand) => void
   disabled: boolean
+  customAgents: readonly CustomTuiAgent[]
 }) {
   useMobileColorScheme()
   return (
@@ -154,6 +161,7 @@ function QuickCommandGroup({
             key={command.id}
             command={command}
             first={index === 0}
+            customAgents={customAgents}
             onLaunch={onLaunch}
             onEdit={onEdit}
             onDelete={onDelete}
@@ -167,31 +175,60 @@ function QuickCommandGroup({
 
 export function QuickCommandAgentPicker({
   selected,
+  selectedCustomAgentId,
+  customAgents,
   onSelect
 }: {
   selected: TuiAgent | null
-  onSelect: (agent: TuiAgent) => void
+  selectedCustomAgentId?: string
+  customAgents: readonly CustomTuiAgent[]
+  onSelect: (agent: TuiAgent, customAgentId?: string) => void
 }) {
   useMobileColorScheme()
+  const supported = new Set<string>(QUICK_COMMAND_SUPPORTED_AGENTS.map((agent) => agent.id))
+  const custom = customAgents.filter((entry) => supported.has(entry.agent))
   return (
     <View style={styles.group}>
-      {QUICK_COMMAND_SUPPORTED_AGENTS.map((agent, index) => (
+      {custom.map((entry, index) => (
         <Pressable
-          key={agent.id}
+          key={`custom-agent:${entry.id}`}
           style={({ pressed }) => [
             styles.row,
             index > 0 && styles.rowBorder,
             pressed && styles.pressed
           ]}
+          onPress={() => onSelect(entry.agent, entry.id)}
+          accessibilityRole="button"
+          accessibilityState={{ selected: selectedCustomAgentId === entry.id }}
+        >
+          <View style={styles.rowIcon}>
+            <MobileAgentIcon agentId={entry.agent} size={16} />
+          </View>
+          <Text style={styles.agentLabel}>{entry.name}</Text>
+          {selectedCustomAgentId === entry.id ? (
+            <Check size={16} color={colors.textPrimary} />
+          ) : null}
+        </Pressable>
+      ))}
+      {QUICK_COMMAND_SUPPORTED_AGENTS.map((agent, index) => (
+        <Pressable
+          key={agent.id}
+          style={({ pressed }) => [
+            styles.row,
+            (index > 0 || custom.length > 0) && styles.rowBorder,
+            pressed && styles.pressed
+          ]}
           onPress={() => onSelect(agent.id)}
           accessibilityRole="button"
-          accessibilityState={{ selected: selected === agent.id }}
+          accessibilityState={{ selected: selected === agent.id && !selectedCustomAgentId }}
         >
           <View style={styles.rowIcon}>
             <MobileAgentIcon agentId={agent.id} size={16} />
           </View>
           <Text style={styles.agentLabel}>{agent.label}</Text>
-          {selected === agent.id ? <Check size={16} color={colors.textPrimary} /> : null}
+          {selected === agent.id && !selectedCustomAgentId ? (
+            <Check size={16} color={colors.textPrimary} />
+          ) : null}
         </Pressable>
       ))}
     </View>

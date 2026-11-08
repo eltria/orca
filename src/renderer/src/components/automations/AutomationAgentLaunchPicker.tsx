@@ -147,9 +147,18 @@ export function AutomationAgentLaunchPicker({
   const scope = useAgentPickerDraftScope(JSON.stringify([workspace, authority, draft.agentId]))
   const onPick = useCallback<ComponentProps<typeof AgentLaunchPicker>['onPick']>(
     (agentId, accepted, _entry, pickedSurface) =>
-      onDraftChange((current) =>
-        pickAutomationLaunch(current, agentId, accepted, pickedSurface, modern, surface)
-      ),
+      onDraftChange((current) => {
+        const next = pickAutomationLaunch(
+          current,
+          agentId,
+          accepted,
+          pickedSurface,
+          modern,
+          surface
+        )
+        const { customAgentId: _previous, ...rest } = next
+        return accepted?.customAgentId ? { ...rest, customAgentId: accepted.customAgentId } : rest
+      }),
     [onDraftChange, modern, surface]
   )
   return (
@@ -160,8 +169,13 @@ export function AutomationAgentLaunchPicker({
         agent={draft.agentId}
         draftScope={scope}
         triggerLabel={
-          visibleAgents.find((agent) => agent.id === draft.agentId)?.label ?? draft.agentId
+          (draft.customAgentId &&
+            settings?.customTuiAgents?.find(
+              (custom) => custom.id === draft.customAgentId && custom.agent === draft.agentId
+            )?.name) ||
+          (visibleAgents.find((agent) => agent.id === draft.agentId)?.label ?? draft.agentId)
         }
+        includeCustomAgents
         setupDisabled={!modern}
         draftForEntry={draftForEntry}
         onOpenChange={setMenuOpen}

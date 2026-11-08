@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { getAgentCatalog, AgentIcon } from '@/lib/agent-catalog'
+import { useCustomAgentName } from '../agent/use-agent-launch-label'
 import type { Automation } from '../../../../shared/automations/automation-definition'
 import type { AutomationRun } from '../../../../shared/automations/history/automation-run'
 import { formatUiAutomationSchedule } from './automation-schedule-label'
@@ -131,6 +132,7 @@ export function AutomationDetail({
 }: AutomationDetailProps): React.JSX.Element {
   const t = useTranslate()
   const intlLocale = useIntlLocale()
+  const customAgentName = useCustomAgentName(automation?.agentId, automation?.customAgentId)
   if (!automation) {
     return (
       <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
@@ -157,7 +159,9 @@ export function AutomationDetail({
         ? t('auto.components.automations.AutomationDetail.usageUnavailable', 'Unavailable')
         : t('auto.components.automations.AutomationDetail.noRuns', 'No runs')
   const agentLabel =
-    getAgentCatalog().find((agent) => agent.id === automation.agentId)?.label ?? automation.agentId
+    customAgentName ??
+    getAgentCatalog().find((agent) => agent.id === automation.agentId)?.label ??
+    automation.agentId
   const runLocationLabel =
     automation.workspaceMode === 'new_per_run'
       ? (automation.baseBranch ??

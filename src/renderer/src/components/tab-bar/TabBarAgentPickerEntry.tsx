@@ -8,7 +8,7 @@ import {
   buildAgentPickerLaunchOptions,
   buildCustomAgentLaunchOptions
 } from './tab-agent-launch-options'
-import { launchableCustomAgents } from './custom-agent-menu-rows'
+import { launchableCustomAgents } from '../agent/custom-agent-picker-rows'
 import TabBarCreateEntry from './TabBarCreateEntry'
 import type { TabBarCreateEntryProps } from './tab-create-entry-props'
 

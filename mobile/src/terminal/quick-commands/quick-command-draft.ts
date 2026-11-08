@@ -21,6 +21,8 @@ export type QuickCommandDraft = {
   command: string
   appendEnter: boolean
   agent: TuiAgent | null
+  /** A custom agent of the host for `agent`; cleared whenever another agent is picked. */
+  customAgentId?: string
   prompt: string
   scope: TerminalQuickCommandScope
 }
@@ -51,6 +53,7 @@ export function quickCommandToDraft(command: TerminalQuickCommand): QuickCommand
       command: '',
       appendEnter: true,
       agent: command.agent,
+      ...(command.customAgentId ? { customAgentId: command.customAgentId } : {}),
       prompt: command.prompt,
       scope
     }
@@ -117,6 +120,7 @@ export function draftToQuickCommand(
       action: 'agent-prompt',
       agent: draft.agent,
       prompt: draft.prompt.trimEnd(),
+      ...(draft.customAgentId ? { customAgentId: draft.customAgentId } : {}),
       scope: draft.scope
     }
   }

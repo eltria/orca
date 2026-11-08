@@ -1,3 +1,4 @@
+import { customTuiAgentForCommand } from '../../../../../shared/agent-launch/catalog/custom-tui-agents'
 import { toast } from 'sonner'
 import type { ManagedPane } from '@/lib/pane-manager/pane-manager-types'
 import { launchAgentInNewTab } from '@/lib/agent-session/launch/new-tab/launch-agent-in-new-tab'
@@ -32,6 +33,8 @@ type ForkAgentSessionFromPaneArgs = {
 export type PreparedAgentSessionFork = {
   prompt: string
   agent: TuiAgent | null
+  /** The source's custom agent, so the fork runs the same command. */
+  customAgentId?: string
   worktreeId: string
   focusSource: () => void
 }
@@ -103,6 +106,15 @@ export function prepareAgentSessionForkFromPane({
     state.tabsByWorktree[worktreeId]?.find((tab) => tab.id === tabId)?.launchAgent
   )
   const agent = sourceAgent ?? tabAgent
+  const customAgents = state.settings?.customTuiAgents
+  const custom =
+    agent && customAgents?.length
+      ? customTuiAgentForCommand(
+          customAgents,
+          agent,
+          state.agentLaunchConfigByPaneKey[paneKey]?.launchConfig.agentCommand
+        )
+      : null
   // This forks context, not the process; xterm capture works for both local and SSH panes.
   const prompt = buildAgentSessionForkPrompt({
     capturedText: pane.serializeAddon.serialize({ scrollback: 800 }),
@@ -124,6 +136,7 @@ export function prepareAgentSessionForkFromPane({
   return {
     prompt,
     agent,
+    ...(custom ? { customAgentId: custom.id } : {}),
     worktreeId,
     focusSource: () => pane.terminal.focus()
   }
@@ -226,7 +239,8 @@ export async function startAgentSessionFork(fork: PreparedAgentSessionFork): Pro
     agent: fork.agent,
     workspace: { kind: 'git-worktree', worktreeId: forkWorktreeId },
     prompt: fork.prompt,
-    promptDelivery: 'draft'
+    promptDelivery: 'draft',
+    ...(fork.customAgentId ? { requestedSurface: 'terminal' as const } : {})
   })
   const launchPlatform = getForkAgentLaunchPlatform({
     repo: sourceRepo,
@@ -235,6 +249,7 @@ export async function startAgentSessionFork(fork: PreparedAgentSessionFork): Pro
   })
   const result = launchAgentInNewTab({
     agent: fork.agent,
+    ...(fork.customAgentId ? { customAgentId: fork.customAgentId } : {}),
     worktreeId: forkWorktreeId,
     prompt: fork.prompt,
     promptDelivery: 'draft',

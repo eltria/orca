@@ -27,6 +27,8 @@ export type TerminalAgentQuickCommand = TerminalQuickCommandBase & {
   action: 'agent-prompt'
   agent: TuiAgent
   prompt: string
+  /** A custom agent of the running host's settings for `agent`; it starts its command in a terminal. */
+  customAgentId?: string
 }
 
 export type TerminalQuickCommand = TerminalCommandQuickCommand | TerminalAgentQuickCommand

@@ -56,6 +56,7 @@ export function runQuickCommandInNewTab({
     const result = launchAgentInNewTab({
       requestId: newAgentLaunchRequestId(),
       agent: command.agent,
+      ...(command.customAgentId ? { customAgentId: command.customAgentId } : {}),
       prompt: command.prompt,
       worktreeId,
       groupId: targetGroupId,

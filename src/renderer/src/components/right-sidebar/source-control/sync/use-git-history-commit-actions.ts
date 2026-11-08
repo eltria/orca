@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react'
+import { defaultCustomAgentLaunch } from '@/lib/default-custom-agent-launch'
 import { requireGitOwnerTarget } from './worktree-git-owner-target'
 import type { RuntimeClientTarget } from '../../../../../../shared/runtime-client-target'
 import { toast } from 'sonner'
@@ -307,6 +308,7 @@ async function explainCommitWithDefaultAgent(
   launchAgentInNewTab({
     requestId: newAgentLaunchRequestId(),
     agent,
+    ...defaultCustomAgentLaunch(agent),
     worktreeId,
     prompt: explainPrompt,
     promptDelivery: 'submit-after-ready'

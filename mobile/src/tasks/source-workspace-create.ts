@@ -1,4 +1,4 @@
-import type { TuiAgent } from '../../../src/shared/agent-launch/catalog/tui-agent'
+import { parseCustomWorkspaceAgentChoice, workspaceChoiceAgent } from './workspace-agent-selection'
 import type { RpcClient } from '../transport/rpc/rpc-client-contract'
 import { resolveComposerMrBase, resolveComposerPrBase } from './composer-source-base-resolve'
 import type {
@@ -22,6 +22,8 @@ import { getClientWorktreeCreateCandidate } from '../../../src/shared/new-worksp
 // Host resolution applies agent permission flags and shell quoting.
 export type WorkspaceCreateAgentBundle = {
   choice: WorkspaceAgentChoice
+  /** A custom agent of the host for `choice`; it starts its command in a terminal. */
+  customAgentId?: string
 }
 
 export type CreateWorkspaceFromComposerArgs = {
@@ -51,10 +53,13 @@ export async function createWorkspaceFromComposerSource(
 }
 
 function resolveComposerAgentLaunch(
-  agentId: TuiAgent | undefined,
+  bundle: WorkspaceCreateAgentBundle,
   supported: WorktreeCreateAgentLaunch['supported']
 ): WorktreeCreateAgentLaunch | undefined {
-  return agentId ? { agent: agentId, supported } : undefined
+  const agent = workspaceChoiceAgent(bundle.choice)
+  const customAgentId =
+    bundle.customAgentId ?? parseCustomWorkspaceAgentChoice(bundle.choice)?.customAgentId
+  return agent ? { agent, ...(customAgentId ? { customAgentId } : {}), supported } : undefined
 }
 
 function toTaskItem(item: MobileLinkedWorkItem, targetRepoId: string): WorkspaceCreateTaskItem {
@@ -187,8 +192,8 @@ async function createBranchWorkspace(args: {
     nameIsAutoManaged,
     note
   } = args
-  const createdWithAgentId = agent.choice === 'blank' ? undefined : agent.choice
-  const agentLaunch = resolveComposerAgentLaunch(createdWithAgentId, args.agentLaunchSupported)
+  const createdWithAgentId = workspaceChoiceAgent(agent.choice) ?? undefined
+  const agentLaunch = resolveComposerAgentLaunch(agent, args.agentLaunchSupported)
   const comment = note?.trim()
   const manualDisplayName = nameIsAutoManaged === true ? undefined : workspaceName?.trim()
   const applyCommon = (params: WorkspaceCreateParams): WorkspaceCreateParams => {
@@ -281,8 +286,8 @@ async function createNewBranchWorkspace(args: {
     nameIsAutoManaged,
     note
   } = args
-  const createdWithAgentId = agent.choice === 'blank' ? undefined : agent.choice
-  const agentLaunch = resolveComposerAgentLaunch(createdWithAgentId, args.agentLaunchSupported)
+  const createdWithAgentId = workspaceChoiceAgent(agent.choice) ?? undefined
+  const agentLaunch = resolveComposerAgentLaunch(agent, args.agentLaunchSupported)
   const manualDisplayName = nameIsAutoManaged === true ? undefined : workspaceName?.trim()
   const comment = note?.trim()
   // Preserve typed git branch names, including slashes; sanitize only the folder, and retry suffixes against the branch name.

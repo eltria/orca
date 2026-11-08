@@ -97,7 +97,8 @@ export function newTabAgentOptionsFrom(
   return buildMobileNewTabAgentOptions(
     // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: Preserve the established response shape at this boundary.
     settings as MobileNewTabAgentSettings | undefined,
-    detectedAgents
+    detectedAgents,
+    { includeCustomAgents: true }
   )
 }
 

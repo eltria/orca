@@ -1,4 +1,5 @@
 import { pickTuiAgent } from '../../../../../../shared/agent-launch/catalog/tui-agent-selection'
+import { defaultCustomTuiAgentFor } from '../../../../../../shared/agent-launch/catalog/custom-tui-agents'
 import { newAgentLaunchesMayOpenChats } from '@/runtime/native-chat/local-sessions/local-structured-chats'
 import { acquireAgentLaunchChoices } from '../../../host-chat-program-acquisition'
 import { useAppStore } from '@/store/index'
@@ -29,7 +30,13 @@ function defaultChatHost(state: AppState, worktreeId: string): DefaultChatHost |
   const preferences = readAgentLaunchPreferencesForWorktree(state, worktreeId)
   const chosen = preferences.defaultTuiAgent
   // Why: only a saved agent asks for a chat here; Auto must not turn catalog order into a launch (#36594).
-  if (!chosen || chosen === 'blank' || !newAgentLaunchesMayOpenChats(state.settings)) {
+  // A custom default runs its own command in a terminal; its base agent's chat would use another provider.
+  if (
+    !chosen ||
+    chosen === 'blank' ||
+    !newAgentLaunchesMayOpenChats(state.settings) ||
+    defaultCustomTuiAgentFor(state.settings, chosen)
+  ) {
     return undefined
   }
   // Why: an unresolved owner is an unknown host, not the local machine.

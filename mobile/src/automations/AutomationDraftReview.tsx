@@ -10,10 +10,13 @@ import { automationStyles as styles } from './automation-styles'
 
 export function AutomationDraftReview({
   draft,
+  agentLabel,
   setup,
   workspaces
 }: {
   draft: AutomationDraft
+  /** The picked agent's name, a custom agent's included. */
+  agentLabel?: string
   setup: AutomationTargets['setups'][number] | undefined
   workspaces: AutomationTargets['workspaces']
 }) {
@@ -30,7 +33,7 @@ export function AutomationDraftReview({
         label={t('automations.mobile.agent', 'Agent')}
         value={
           draft.agentId
-            ? mobileTuiAgentLabel(draft.agentId)
+            ? (agentLabel ?? mobileTuiAgentLabel(draft.agentId))
             : t('automations.mobile.chooseAnAgent', 'Choose an agent')
         }
       />

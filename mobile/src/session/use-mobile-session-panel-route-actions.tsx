@@ -71,12 +71,17 @@ export function useMobileSessionPanelRouteActions(scope: MobileSessionPresentati
         ]
       : createTabAgentOptions.length > 0
         ? createTabAgentOptions.map((option) => ({
-            id: `agent:${option.agent}`,
+            id: option.customAgentId
+              ? `custom-agent:${option.customAgentId}`
+              : `agent:${option.agent}`,
             label: option.label,
             renderIcon: () => <MobileAgentIcon agentId={option.agent} size={16} />,
             onPress: () => {
               setShowCreateTabDrawer(false)
-              void handleCreateTerminal(option.agent)
+              void handleCreateTerminal(
+                option.agent,
+                option.customAgentId ? { customAgentId: option.customAgentId } : undefined
+              )
             }
           }))
         : createTabAgentLoadState === 'loaded'
@@ -125,7 +130,9 @@ export function useMobileSessionPanelRouteActions(scope: MobileSessionPresentati
           ]
         : createTabAgentOptions.length > 0
           ? createTabAgentOptions.map((option) => ({
-              id: `agent:${option.agent}`,
+              id: option.customAgentId
+                ? `custom-agent:${option.customAgentId}`
+                : `agent:${option.agent}`,
               label: option.label,
               hint: t('session.usePanelRouteActions.newSessionHint', 'New agent session'),
               icon: Bot,
@@ -137,6 +144,7 @@ export function useMobileSessionPanelRouteActions(scope: MobileSessionPresentati
                 }
                 void sendDiffNotesToNewAgent(delivery, async () => {
                   await handleCreateTerminal(option.agent, {
+                    ...(option.customAgentId ? { customAgentId: option.customAgentId } : {}),
                     initialPrompt: delivery.prompt,
                     onPromptSent: () => void clearDeliveredDiffComments(delivery.comments)
                   })

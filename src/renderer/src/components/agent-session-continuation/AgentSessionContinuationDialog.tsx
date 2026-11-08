@@ -274,6 +274,7 @@ export function AgentSessionContinuationDialog({
               {t('components.agentSessionContinuation.agent', 'Agent')}
             </label>
             <AgentLaunchPicker
+              includeCustomAgents
               draftScope={draftScope}
               disabled={controlsDisabled}
               model={destinationModel}

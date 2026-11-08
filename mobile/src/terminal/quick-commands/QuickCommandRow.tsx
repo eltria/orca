@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import type { CustomTuiAgent } from '../../../../src/shared/agent-launch/catalog/custom-tui-agents'
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { useClipboardWriter } from '../../platform/clipboard'
 import { triggerError } from '../../platform/haptics'
@@ -18,6 +19,7 @@ import { useMobileTranslation } from '../../i18n/use-mobile-translation'
 type QuickCommandRowProps = {
   command: TerminalQuickCommand
   first: boolean
+  customAgents: readonly CustomTuiAgent[]
   onLaunch: (command: TerminalQuickCommand) => void
   onEdit: (command: TerminalQuickCommand) => void
   onDelete: (command: TerminalQuickCommand) => void
@@ -32,6 +34,7 @@ type CopyFeedback = {
 export function QuickCommandRow({
   command,
   first,
+  customAgents,
   onLaunch,
   onEdit,
   onDelete,
@@ -137,7 +140,7 @@ export function QuickCommandRow({
             {command.label}
           </Text>
           <Text style={[styles.rowPreview, !isAgent && styles.mono]} numberOfLines={1}>
-            {getQuickCommandDisplayPreview(command)}
+            {getQuickCommandDisplayPreview(command, customAgents)}
           </Text>
         </View>
       </Pressable>

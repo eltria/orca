@@ -44,6 +44,7 @@ import { formatAutomationDateTimeWithRelative } from './automation-page-parts'
 import { getAutomationTargetAvailability } from './automation-target-availability'
 import { getAgentLabel } from './automation-draft-model'
 import { automationProjectName, type AutomationListRow } from './automation-list-row-identity'
+import { useCustomAgentName } from '../agent/use-agent-launch-label'
 import { formatAutomationUsageSummary } from './automation-usage-model'
 import { AUTOMATIONS_TABLE_GRID_CLASS } from './automations-table-layout'
 import {
@@ -150,7 +151,9 @@ export function AutomationListLocalRow({
   const movedToDistro = useAppStore(
     (state) => wslMovedProjectForAutomation(state.wslMovedProjects, automation)?.distro ?? null
   )
-  const agentLabel = getAgentLabel(automation.agentId)
+  const agentLabel =
+    useCustomAgentName(automation.agentId, automation.customAgentId) ??
+    getAgentLabel(automation.agentId)
   const hostId =
     automation.runContext?.hostId ??
     (automationRepo ? getRepoExecutionHostId(automationRepo) : null)

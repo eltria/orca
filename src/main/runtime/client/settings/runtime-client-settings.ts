@@ -72,6 +72,8 @@ export class RuntimeClientSettingsController {
       newWorkspaceSetupOnly: false,
       disabledTuiAgents: settings.disabledTuiAgents ?? [],
       agentCmdOverrides: settings.agentCmdOverrides ?? {},
+      customTuiAgents: settings.customTuiAgents ?? [],
+      defaultCustomTuiAgentId: settings.defaultCustomTuiAgentId,
       agentDefaultArgs: launchProfile.agentDefaultArgs,
       agentDefaultEnv: launchProfile.agentDefaultEnv,
       agentStatusHooksEnabled: settings.agentStatusHooksEnabled !== false,

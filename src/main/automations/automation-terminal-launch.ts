@@ -64,6 +64,7 @@ export async function launchAutomationTerminalAgent(
     runtime,
     intent: {
       agent,
+      ...(automation.customAgentId ? { customAgentId: automation.customAgentId } : {}),
       // The workspace factory supplies create arguments from the automation.
       target:
         automation.workspaceMode === 'new_per_run'

@@ -12,6 +12,7 @@ export type TerminalQuickCommandDialogDraftMemory = {
   terminalAppendEnter: boolean
   agent: TuiAgent
   agentPrompt: string
+  agentCustomAgentId?: string
 }
 
 export function createTerminalQuickCommandDialogDraftMemory(
@@ -23,7 +24,8 @@ export function createTerminalQuickCommandDialogDraftMemory(
       terminalCommand: '',
       terminalAppendEnter: true,
       agent: command.agent,
-      agentPrompt: command.prompt
+      agentPrompt: command.prompt,
+      ...(command.customAgentId ? { agentCustomAgentId: command.customAgentId } : {})
     }
   }
   return {
@@ -42,7 +44,8 @@ export function rememberTerminalQuickCommandDialogDraft(
     return {
       ...memory,
       agent: draft.agent,
-      agentPrompt: draft.prompt
+      agentPrompt: draft.prompt,
+      agentCustomAgentId: draft.customAgentId
     }
   }
   return {
@@ -75,7 +78,8 @@ export function switchTerminalQuickCommandDialogAction(
         ...base,
         action: 'agent-prompt',
         agent: nextMemory.agent,
-        prompt: nextMemory.agentPrompt
+        prompt: nextMemory.agentPrompt,
+        ...(nextMemory.agentCustomAgentId ? { customAgentId: nextMemory.agentCustomAgentId } : {})
       }
     }
   }

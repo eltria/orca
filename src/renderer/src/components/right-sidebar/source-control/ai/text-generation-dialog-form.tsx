@@ -12,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
-import { getAgentCatalog } from '@/lib/agent-catalog'
 import { AgentLaunchPicker } from '@/components/agent/AgentLaunchPicker'
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import { commitMessagePickerModel } from '@/components/feature-wall/ai-commit-pr-picker'
@@ -29,7 +28,6 @@ import type { SourceControlTextActionId } from '../../../../../../shared/source-
 import type { SourceControlAiWriteTarget } from '../../../../../../shared/source-control/ai/settings/source-control-ai-recipe-save'
 import type { SourceControlRenderSettings } from '../listing/use-worktree-context'
 import type { Repo } from '../../../../../../shared/repo-types'
-import type { TuiAgent } from '../../../../../../shared/agent-launch/catalog/tui-agent'
 import { toast } from 'sonner'
 import { SourceControlActionVariableChips } from '../../../source-control/SourceControlActionVariableChips'
 import { sourceControlTextGenerationDefaultsMatchTarget } from './text-generation-defaults'
@@ -38,13 +36,16 @@ import {
   type CommitMessageGenerationAgentChoice
 } from './text-generation-params'
 import { translate } from '@/i18n/i18n'
+import { getAgentCatalog } from '@/lib/agent-catalog'
+import type { TuiAgent } from '../../../../../../shared/agent-launch/catalog/tui-agent'
+import {
+  getDefaultSourceControlTextGenerationSaveTargetKey,
+  sourceControlTextGenerationSaveTargetKey,
+  type SourceControlTextGenerationSaveTarget
+} from './text-generation-save-targets'
 import { useTranslate } from '@/i18n/use-translate'
 
-export type SourceControlTextGenerationSaveTarget = {
-  target: SourceControlAiWriteTarget
-  label: string
-  successMessage: string
-}
+export type { SourceControlTextGenerationSaveTarget } from './text-generation-save-targets'
 
 type SourceControlTextGenerationDialogFormProps = {
   actionId: SourceControlTextActionId
@@ -62,20 +63,6 @@ type SourceControlTextGenerationDialogFormProps = {
     target: SourceControlAiWriteTarget,
     params: ResolvedSourceControlAiGenerationParams
   ) => Promise<void> | void
-}
-
-export function sourceControlTextGenerationSaveTargetKey(
-  target: SourceControlAiWriteTarget
-): string {
-  return target.type === 'repo' ? `repo:${target.repoId}` : 'global'
-}
-
-export function getDefaultSourceControlTextGenerationSaveTargetKey(
-  saveTargets: SourceControlTextGenerationSaveTarget[]
-): string {
-  const defaultTarget =
-    saveTargets.find((saveTarget) => saveTarget.target.type === 'global') ?? saveTargets[0]
-  return defaultTarget ? sourceControlTextGenerationSaveTargetKey(defaultTarget.target) : 'global'
 }
 
 function agentLabel(agentId: TuiAgent): string {

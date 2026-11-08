@@ -149,16 +149,19 @@ describe('launchAgentInNewTab', () => {
     }
   )
 
-  it('starts and resumes through a launch command instead of the Settings command', async () => {
+  it('starts and resumes a custom agent through its command instead of the Settings command', async () => {
     store.settings.agentCmdOverrides = { claude: 'claude-ds' }
+    store.settings.customTuiAgents = [
+      { id: 'aione', name: 'aione', agent: 'claude', command: 'aione launch claude' }
+    ]
     store.settings.nativeChatProviders = { claude: true }
     const { launchAgentInNewTab } = await import('./launch-agent-in-new-tab')
     launchAgentInNewTab({
-      requestId: 'quick-command-launch',
+      requestId: 'custom-agent-launch',
       agent: 'claude',
       worktreeId: 'wt-1',
       launchPlatform: 'darwin',
-      launchCommand: 'aione launch claude'
+      customAgentId: 'aione'
     })
     const startup = queuedStartups()[0]
     expect(startup?.command).toMatch(/^aione launch claude(\s|$)/)

@@ -87,13 +87,16 @@ export async function createWorktreeWithNameRetry(
       launch?.agent ?? null,
       launchOperationId,
       params,
-      worktreeCreateIdempotency
+      worktreeCreateIdempotency,
+      launch?.customAgentId
     )
     let response = sent.response
     if (
       !response.ok &&
       !sent.replayed &&
       launch &&
+      // The plain create would start the base agent instead of the custom one.
+      !launch.customAgentId &&
       (launchOperationId
         ? isAgentLaunchReplayUnsupportedRefusal(response.error)
         : isAgentLaunchUnsupportedRefusal(response.error))
@@ -134,12 +137,26 @@ export async function createWorktreeWithNameRetry(
 
 async function resolveAgentLaunchRoute(
   launch: WorktreeCreateAgentLaunch | undefined
-): Promise<{ agent: TuiAgent; replay: boolean } | null> {
+): Promise<{ agent: TuiAgent; replay: boolean; customAgentId?: string } | null> {
   if (!launch) {
     return null
   }
   const support = await launch.supported
-  return support ? { agent: launch.agent, replay: support.replay } : null
+  if (!support && launch.customAgentId) {
+    throw new Error(
+      translate(
+        'tasks.worktreeCreateRetry.customAgentNeedsHost',
+        'Update Orca on the computer to start custom agents.'
+      )
+    )
+  }
+  return support
+    ? {
+        agent: launch.agent,
+        replay: support.replay,
+        ...(launch.customAgentId ? { customAgentId: launch.customAgentId } : {})
+      }
+    : null
 }
 
 // Launch lacks display name; use the candidate until the host resolves it, preserving warnings from either route.
@@ -173,7 +190,8 @@ function sendWorktreeCreateResilient(
   launchAgent: TuiAgent | null,
   launchOperationId: string | null,
   params: WorkspaceCreateParams,
-  worktreeCreateIdempotency: WorktreeCreateIdempotencySupport | false
+  worktreeCreateIdempotency: WorktreeCreateIdempotencySupport | false,
+  customAgentId?: string
 ): Promise<{ response: RpcResponse; replayed: boolean }> {
   // Only the selected method's receipt can authorize replay after an ambiguous delivery.
   const replay: AmbiguousDeliveryReplay | null = launchAgent
@@ -191,14 +209,14 @@ function sendWorktreeCreateResilient(
           ? agentLaunchReplayRun.request(
               client,
               {
-                ...agentLaunchCreateParams(launchAgent, params),
+                ...agentLaunchCreateParams(launchAgent, params, undefined, customAgentId),
                 operationId: launchOperationId
               },
               { timeoutMs: WORKTREE_CREATE_TIMEOUT_MS }
             )
           : agentLaunchRun.request(
               client,
-              agentLaunchCreateParams(launchAgent, params, launchOperationId),
+              agentLaunchCreateParams(launchAgent, params, launchOperationId, customAgentId),
               { timeoutMs: WORKTREE_CREATE_TIMEOUT_MS }
             )
         : worktreeCreateRun.request(client, params, {

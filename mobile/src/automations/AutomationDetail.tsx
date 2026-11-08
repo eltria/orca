@@ -12,6 +12,7 @@ import {
 import { Switch, Text, View } from 'react-native'
 import { formatAutomationSchedule } from './automation-schedule-label'
 import { mobileTuiAgentLabel } from '../tasks/mobile-tui-agents'
+import { useHostCustomAgents } from '../session/use-host-custom-agents'
 import type { MobileAutomationRow } from './automation-reply-schema'
 import { AutomationButton, AutomationMetadata } from './AutomationControls'
 import { automationDate } from './automation-run-presentation'
@@ -33,6 +34,12 @@ export function AutomationDetail(props: {
   const { automation, item } = props.row
   const orphan = item.selector.kind === 'orphan'
   const client = props.client
+  const customAgentId =
+    typeof automation.customAgentId === 'string' ? automation.customAgentId : undefined
+  // Custom agents are named in the paired desktop's settings; only an automation with one reads them.
+  const customAgentName = useHostCustomAgents(client, Boolean(customAgentId)).find(
+    (custom) => custom.id === customAgentId && custom.agent === automation.agentId
+  )?.name
   const [inventory, setInventory] = useState<{
     client: RpcClient
     generation: number | undefined
@@ -150,7 +157,7 @@ export function AutomationDetail(props: {
         />
         <AutomationMetadata
           label={t('automations.mobile.agent', 'Agent')}
-          value={mobileTuiAgentLabel(automation.agentId)}
+          value={customAgentName ?? mobileTuiAgentLabel(automation.agentId)}
         />
         <AutomationMetadata
           label={t('automations.mobile.project', 'Project')}

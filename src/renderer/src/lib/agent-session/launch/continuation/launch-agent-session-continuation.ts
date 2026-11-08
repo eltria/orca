@@ -36,6 +36,8 @@ type LaunchAgentSessionContinuationArgs = {
   sessionOptions?: Readonly<Record<string, string>>
   chatSessionOptions?: Readonly<Record<string, string>>
   agentArgs?: string | null
+  /** A custom agent picked for the continuation; it starts in a terminal with its own command. */
+  customAgentId?: string
 }
 
 /** Detected agents, then those that open as a chat on the workspace's host without their CLI. */
@@ -107,9 +109,15 @@ export async function launchAgentSessionContinuation({
   signal,
   sessionOptions,
   chatSessionOptions,
-  agentArgs
+  agentArgs,
+  customAgentId
 }: LaunchAgentSessionContinuationArgs): Promise<boolean> {
-  const label = getAgentLabel(agent)
+  const label =
+    (customAgentId &&
+      useAppStore
+        .getState()
+        .settings?.customTuiAgents?.find((custom) => custom.id === customAgentId)?.name) ||
+    getAgentLabel(agent)
   // Blind PTY writes do not prove prompt delivery; claiming success can hide a lost handoff (#22479).
   let deliveryUnconfirmed = false
   const delivery = {
@@ -118,6 +126,7 @@ export async function launchAgentSessionContinuation({
     ...(sessionOptions ? { sessionOptions: { ...sessionOptions } } : {}),
     ...(chatSessionOptions !== undefined ? { chatSessionOptions: { ...chatSessionOptions } } : {}),
     ...(agentArgs !== undefined ? { agentArgs } : {}),
+    ...(customAgentId ? { customAgentId } : {}),
     ...(groupId ? { groupId } : {}),
     prompt,
     promptDelivery: agent === 'claude' ? ('draft' as const) : ('submit-after-ready' as const),

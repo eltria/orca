@@ -8,7 +8,7 @@ import {
   type WorkspaceAgentChoice,
   buildTaskWorkspaceCreateParams,
   isSetupHookTrusted,
-  isWorkspaceAgentEnabled,
+  isWorkspaceChoiceAvailable,
   pickWorkspaceAgent,
   shouldResolveHostedReviewStartPoint,
   useCallback,
@@ -92,17 +92,19 @@ export function useMobileTasksWorkspaceCreateActions(model: WorkspaceSshStateMod
         } catch {
           // Detection refresh is best-effort; the runtime validates again before spawning.
         }
+        const overrideEnabled =
+          agentOverride === 'blank' ||
+          (agentOverride !== undefined &&
+            isWorkspaceChoiceAvailable(
+              agentOverride,
+              latestRuntimeTaskSettings.disabledTuiAgents,
+              null
+            ))
         const selectedAgent =
-          agentOverride &&
-          (agentOverride === 'blank' ||
-            isWorkspaceAgentEnabled(agentOverride, latestRuntimeTaskSettings.disabledTuiAgents))
+          agentOverride && overrideEnabled
             ? agentOverride
             : pickWorkspaceAgent(latestRuntimeTaskSettings, workspaceDetectedAgentIds)
-        if (
-          agentOverride &&
-          agentOverride !== 'blank' &&
-          !isWorkspaceAgentEnabled(agentOverride, latestRuntimeTaskSettings.disabledTuiAgents)
-        ) {
+        if (agentOverride && !overrideEnabled) {
           setWorkspaceAgent(selectedAgent)
           setWorkspaceAgentOverridden(false)
           throw new Error('Selected agent is disabled. Choose an enabled agent before creating.')

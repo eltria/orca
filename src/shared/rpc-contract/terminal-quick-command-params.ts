@@ -40,6 +40,7 @@ export const TerminalQuickCommandUpdateItem = z.union([
       }),
       // Bounded where every save lands (main's settings update), with the reason in its refusal.
       prompt: z.string(),
+      customAgentId: z.string().min(1).max(MAX_QUICK_COMMAND_ID_LENGTH).optional(),
       scope: TerminalQuickCommandScopeUpdate.optional()
     })
     .strict()

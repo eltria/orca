@@ -21,6 +21,8 @@ export type AutomationDraft = {
   name: string
   prompt: string
   agentId: MobileAutomation['agentId'] | null
+  /** A custom agent of the host for `agentId`. */
+  customAgentId?: string
   surface?: MobileAutomation['surface']
   setupId: string
   workspaceId: string
@@ -41,6 +43,9 @@ export function newAutomationDraft(current?: MobileAutomation): AutomationDraft 
     name: current?.name ?? '',
     prompt: current?.prompt ?? '',
     agentId: current?.agentId ?? null,
+    ...(typeof current?.customAgentId === 'string' && current.customAgentId
+      ? { customAgentId: current.customAgentId }
+      : {}),
     surface: current?.surface,
     setupId: current?.runContext
       ? automationSetupKey({ ...current.runContext, id: current.runContext.projectHostSetupId })
@@ -178,6 +183,7 @@ function editableFields(draft: AutomationDraft): UpdateFields {
     prompt: draft.prompt.trim(),
     // A saved agent this build doesn't know is never written back.
     ...(isTuiAgent(draft.agentId) ? { agentId: draft.agentId } : {}),
+    customAgentId: draft.customAgentId ?? null,
     rrule: draft.rrule,
     timezone: draft.timezone,
     baseBranch: draft.baseBranch || null,
@@ -264,6 +270,8 @@ export function automationCreateParams(
     name: draft.name.trim(),
     prompt: draft.prompt.trim(),
     agentId: draft.agentId,
+    // null (none) is an update's clear; a new automation leaves it out.
+    customAgentId: draft.customAgentId || undefined,
     creationKey,
     ...target,
     rrule: draft.rrule,

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ArrowDown, ArrowUp, Pencil, Plus, Trash2 } from 'lucide-react'
 import { AgentIcon, getAgentLabel } from '@/lib/agent-catalog'
-import { translate } from '@/i18n/i18n'
+import { useTranslate } from '@/i18n/use-translate'
 import { useUiLanguageRevision } from '@/i18n/use-ui-language-revision'
 import { cn } from '@/lib/utils'
 import { createNonSecureContextUuid } from '../../../../../../shared/non-secure-context-uuid'
@@ -20,6 +20,7 @@ export function CustomTuiAgentsSection({
   settings: GlobalSettings
   updateSettings: (updates: Partial<GlobalSettings>) => void | Promise<void>
 }): React.JSX.Element {
+  const t = useTranslate()
   useUiLanguageRevision()
   const [editing, setEditing] = useState<Editing | null>(null)
   // Deleting asks twice in place: the first press arms the row, the second deletes.
@@ -48,11 +49,11 @@ export function CustomTuiAgentsSection({
         className="mb-3"
         title={
           <span className="flex items-center gap-2">
-            {translate('settings.agents.customAgents.title', 'Custom agents')}
+            {t('settings.agents.customAgents.title', 'Custom agents')}
             <SettingsBadge tone="accent">{customAgents.length}</SettingsBadge>
           </span>
         }
-        description={translate(
+        description={t(
           'settings.agents.customAgents.description',
           'Extra entries for an installed agent that start it with your own command, such as a wrapper. Status, prompts and resume work as usual; pick them from the + menu.'
         )}
@@ -75,13 +76,13 @@ export function CustomTuiAgentsSection({
             }
           >
             <Plus className="size-3" />
-            {translate('settings.agents.customAgents.add', 'Add')}
+            {t('settings.agents.customAgents.add', 'Add')}
           </Button>
         }
       />
       {customAgents.length === 0 ? (
         <div className="rounded-md border border-dashed border-border/50 px-3 py-3 text-sm text-muted-foreground">
-          {translate(
+          {t(
             'settings.agents.customAgents.empty',
             'No custom agents yet. Add one to start Claude or another agent with your own command.'
           )}
@@ -106,21 +107,21 @@ export function CustomTuiAgentsSection({
             </div>
             <div className="flex shrink-0 items-center gap-0.5">
               <RowAction
-                label={translate('settings.agents.customAgents.moveUp', 'Move up')}
+                label={t('settings.agents.customAgents.moveUp', 'Move up')}
                 disabled={index === 0}
                 onClick={() => move(index, -1)}
               >
                 <ArrowUp className="size-3.5" />
               </RowAction>
               <RowAction
-                label={translate('settings.agents.customAgents.moveDown', 'Move down')}
+                label={t('settings.agents.customAgents.moveDown', 'Move down')}
                 disabled={index === customAgents.length - 1}
                 onClick={() => move(index, 1)}
               >
                 <ArrowDown className="size-3.5" />
               </RowAction>
               <RowAction
-                label={translate('settings.agents.customAgents.edit', 'Edit')}
+                label={t('settings.agents.customAgents.edit', 'Edit')}
                 onClick={() => setEditing({ mode: 'edit', agent })}
               >
                 <Pencil className="size-3.5" />
@@ -138,11 +139,11 @@ export function CustomTuiAgentsSection({
                     save(customAgents.filter((entry) => entry.id !== agent.id))
                   }}
                 >
-                  {translate('settings.agents.customAgents.confirmDelete', 'Delete')}
+                  {t('settings.agents.customAgents.confirmDelete', 'Delete')}
                 </Button>
               ) : (
                 <RowAction
-                  label={translate('settings.agents.customAgents.delete', 'Delete {{name}}', {
+                  label={t('settings.agents.customAgents.delete', 'Delete {{name}}', {
                     name: agent.name
                   })}
                   onClick={() => setArmedDeleteId(agent.id)}

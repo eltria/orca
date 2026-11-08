@@ -4,7 +4,8 @@ import {
   getTerminalQuickCommandBody,
   isTerminalAgentQuickCommand
 } from '../../../../shared/terminal/quick-commands/terminal-quick-commands'
-import { AgentIcon, getAgentLabel } from '@/lib/agent-catalog'
+import { AgentIcon } from '@/lib/agent-catalog'
+import { useAgentLaunchLabel } from '../agent/use-agent-launch-label'
 import { useTranslate } from '@/i18n/use-translate'
 import { useClipboardTextCopyFeedback } from '@/hooks/use-clipboard-text-copy-feedback'
 import type { HostedTerminalQuickCommand } from '@/hooks/use-terminal-quick-command-hosts'
@@ -45,6 +46,10 @@ export function TabBarQuickCommandItem({
   const id = useId()
   const { command } = entry
   const body = getTerminalQuickCommandBody(command)
+  const agentLabel = useAgentLaunchLabel(
+    isTerminalAgentQuickCommand(command) ? command.agent : 'claude',
+    isTerminalAgentQuickCommand(command) ? command.customAgentId : undefined
+  )
   const { canCopy, copyText, status } = useClipboardTextCopyFeedback(body)
 
   const copyLabel =
@@ -94,7 +99,7 @@ export function TabBarQuickCommandItem({
         </span>
         <span className="block truncate font-mono text-[11px] text-muted-foreground">
           {isTerminalAgentQuickCommand(command)
-            ? `${getAgentLabel(command.agent)}: ${command.prompt}`
+            ? `${agentLabel}: ${command.prompt}`
             : command.command}
         </span>
       </span>

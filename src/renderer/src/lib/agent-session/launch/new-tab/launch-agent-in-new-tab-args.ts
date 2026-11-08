@@ -40,8 +40,8 @@ export type LaunchAgentInNewTabArgs = LaunchAgentInNewTabRequest & {
   launchSource?: LaunchSource
   /** User-authored Quick Command label for local tabs created from the tab bar. */
   quickCommandLabel?: string | null
-  /** Runs instead of the agent's Settings command for this launch only, so it opens as a terminal. */
-  launchCommand?: string
+  /** A custom agent of the launching host's settings; its command replaces the agent's, in a terminal. */
+  customAgentId?: string
   /** Shell platform for the startup command; defaults to renderer OS. SSH/WSL worktrees run Linux even from Windows. */
   launchPlatform?: NodeJS.Platform
   /** Called after the prompt is actually delivered to the agent input path. */

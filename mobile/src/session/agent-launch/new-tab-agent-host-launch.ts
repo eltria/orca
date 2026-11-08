@@ -1,3 +1,4 @@
+import { terminalCreateCopy } from '../../terminal/session/mobile-session-terminal-create-copy'
 import type { MobileQuickCommandLaunch } from '../../terminal/quick-commands'
 import type { MobileSessionTab } from '../tabs/mobile-session-tabs'
 import type { TuiAgent } from '../../../../src/shared/agent-launch/catalog/tui-agent'
@@ -74,6 +75,7 @@ export async function launchNewTabAgentThroughHost(args: {
     hostCapabilities: args.hostCapabilities,
     worktreeId: args.worktreeId,
     agent: args.agent,
+    ...(options?.customAgentId ? { customAgentId: options.customAgentId } : {}),
     reservation,
     ...(afterTabId ? { placement: { afterTabId } } : {}),
     ...(prompt?.trim() ? { prompt: { text: prompt, delivery: 'submit' as const } } : {}),
@@ -85,6 +87,11 @@ export async function launchNewTabAgentThroughHost(args: {
   })
   if (launched.kind === 'unsupported') {
     pendingSelectionRef.current = withoutUnansweredLaunch(pendingSelectionRef.current, args.lock)
+    // Only the host's agent.launch starts a custom agent; the fallbacks would start the plain agent.
+    if (options?.customAgentId) {
+      args.reportCreateFailure(terminalCreateCopy.customAgentNeedsHost())
+      return true
+    }
     return false
   }
   if (launched.kind === 'failed') {

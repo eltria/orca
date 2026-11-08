@@ -16,7 +16,7 @@ import type { TuiAgent } from '../../../../shared/agent-launch/catalog/tui-agent
 import type { Translate } from '@/i18n/use-translate'
 import type { ActiveOption } from './tab-create-entry-active-option'
 import type { CustomTuiAgent } from '../../../../shared/agent-launch/catalog/custom-tui-agents'
-import { customAgentMenuRow } from './custom-agent-menu-rows'
+import { customAgentMenuRow } from '../agent/custom-agent-picker-rows'
 
 export type TabAgentLaunchOption = {
   agent: TuiAgent

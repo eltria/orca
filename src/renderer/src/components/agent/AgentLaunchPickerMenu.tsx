@@ -7,7 +7,7 @@ import { useAppStore } from '@/store/index'
 import { parseExecutionHostId } from '../../../../shared/execution-host'
 import { Input } from '@/components/ui/input'
 import { AgentPickerMenuRow, type AgentPickerMenuLaunch } from './AgentLaunchPickerMenuRow'
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
+import { DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { useTranslate } from '@/i18n/use-translate'
 import { retireAgentPickerDrafts, type AgentPickerSetupIdentity } from './AgentLaunchSetupButton'
 import type { NewTabAgentMenuModel } from '../tab-bar/use-new-tab-agent-menu-rows'
@@ -16,10 +16,13 @@ import {
   type AgentPickerInventorySource
 } from './use-agent-launch-picker-inventory'
 import { searchAgentPickerSetups } from '../../../../shared/agent-launch/picker/agent-launch-picker-search'
-import type {
-  AgentPickerDraft,
-  AgentPickerEntry
+import {
+  customAgentPickerDraft,
+  type AgentPickerDraft,
+  type AgentPickerEntry
 } from '../../../../shared/agent-launch/picker/agent-launch-picker'
+import { customAgentMenuRow, pickerCustomAgents } from './custom-agent-picker-rows'
+import { CustomAgentMenuItem } from './CustomAgentMenuItem'
 
 export function AgentLaunchPickerMenu({
   model,
@@ -37,7 +40,8 @@ export function AgentLaunchPickerMenu({
   searchInputRef,
   onSelectAgent,
   defaultAgent,
-  onSetDefault
+  onSetDefault,
+  includeCustomAgents = false
 }: {
   model?: NewTabAgentMenuModel
   draftScope?: object
@@ -57,6 +61,8 @@ export function AgentLaunchPickerMenu({
   onSelectAgent?: (agent: AgentPickerEntry['agent']) => void
   defaultAgent?: AgentPickerEntry['agent'] | 'blank' | null
   onSetDefault?: (agent: AgentPickerEntry['agent']) => void
+  /** Only callers that launch a picked draft's custom agent list them; others would start the base agent. */
+  includeCustomAgents?: boolean
 }) {
   const t = useTranslate()
   useEffect(() => {
@@ -103,6 +109,12 @@ export function AgentLaunchPickerMenu({
   const visible = entries.filter((entry) =>
     words.every((word) => `${entry.agent} ${entry.label}`.toLowerCase().includes(word))
   )
+  const configuredCustomAgents = useAppStore((state) => state.settings?.customTuiAgents)
+  const customAgents = includeCustomAgents
+    ? pickerCustomAgents(configuredCustomAgents, entries, query)
+    : []
+  // A custom agent's pick names its base agent too; only the custom row reads as chosen.
+  const builtInValue = value?.customAgentId ? undefined : value
   // Filtering changes presentation; an active owner survives its result row disappearing.
   if (activeSetup) {
     const entry = entries.find((entry) => entry.agent === activeSetup.agent)
@@ -220,7 +232,7 @@ export function AgentLaunchPickerMenu({
               label={setup.label}
               searchDefault={showSearchDefault && setup === firstSetup}
               source={source}
-              selected={value?.agent === setup.entry.agent ? value : undefined}
+              selected={builtInValue?.agent === setup.entry.agent ? builtInValue : undefined}
               onSelectAgent={onSelectAgent}
               disabled={disabled}
               terminalBlocked={terminalBlocked}
@@ -228,7 +240,27 @@ export function AgentLaunchPickerMenu({
             />
           )
         })}
-        {!visible.length && !setups.length ? (
+        {customAgents.length && (visible.length || setups.length) ? (
+          <DropdownMenuSeparator />
+        ) : null}
+        {customAgents.map(({ custom, entry }) => (
+          <CustomAgentMenuItem
+            key={custom.id}
+            custom={custom}
+            disabled={disabled}
+            selected={value?.customAgentId === custom.id}
+            onSelect={() => {
+              onSelectAgent?.(entry.agent)
+              void runLaunch(
+                customAgentMenuRow(custom, entry.rows),
+                customAgentPickerDraft(custom),
+                entry,
+                'terminal'
+              )
+            }}
+          />
+        ))}
+        {!visible.length && !setups.length && !customAgents.length ? (
           <DropdownMenuItem disabled>
             {t('auto.components.agent.AgentCombobox.579c768bde', 'No agents match your search.')}
           </DropdownMenuItem>
@@ -238,7 +270,7 @@ export function AgentLaunchPickerMenu({
   )
 }
 
-// Subscribe here so inventory updates do not re-render the tab bar.
+// Subscribe here so inventory updates do not re-render the tab bar, whose menu lists custom agents.
 export function SubscribedAgentLaunchPickerMenu({
   inventory,
   ...props
@@ -246,5 +278,5 @@ export function SubscribedAgentLaunchPickerMenu({
   inventory: AgentPickerInventorySource
 }) {
   const entries = useAgentPickerInventoryEntries(inventory)
-  return <AgentLaunchPickerMenu {...props} entries={entries} />
+  return <AgentLaunchPickerMenu includeCustomAgents {...props} entries={entries} />
 }

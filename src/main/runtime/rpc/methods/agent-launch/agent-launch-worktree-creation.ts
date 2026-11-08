@@ -52,7 +52,8 @@ export function agentLaunchWorkspaceFactory(
       launchSource,
       paneKey,
       options,
-      accountEnv
+      accountEnv,
+      customAgentId
     }) => {
       const startupLaunchPreferences =
         startupAgent && toAgentLaunchPreferences(options, startupAgent)
@@ -98,6 +99,7 @@ export function agentLaunchWorkspaceFactory(
             context
           ),
           ...(agentArgs !== undefined ? { startupAgentArgs: agentArgs } : {}),
+          ...(customAgentId ? { startupCustomAgentId: customAgentId } : {}),
           ...(startupPrompt
             ? {
                 onStartupPromptCarry: (carried: boolean) => {

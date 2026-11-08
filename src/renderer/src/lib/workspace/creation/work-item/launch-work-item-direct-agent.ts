@@ -24,6 +24,7 @@ export function buildDirectWorkItemAgentStartupPlan(args: {
   agent: TuiAgent | null
   agentArgs?: string | null
   sessionOptions?: Readonly<Record<string, string>>
+  customAgentId?: string
   sessionOptionsYieldToAgentArgs?: true
   draftContent: string
   promptDelivery: 'draft' | 'submit-after-ready'
@@ -51,6 +52,7 @@ export function buildDirectWorkItemAgentStartupPlan(args: {
     settings: args.settings ?? {},
     agentArgs: args.agentArgs,
     sessionOptions: args.sessionOptions,
+    ...(args.customAgentId ? { customAgentId: args.customAgentId } : {}),
     sessionOptionsYieldToAgentArgs: args.sessionOptionsYieldToAgentArgs,
     platform: args.launchPlatform,
     shell: args.shell,

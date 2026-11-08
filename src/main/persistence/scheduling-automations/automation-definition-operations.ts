@@ -1,4 +1,5 @@
 import { retainAutomationReselectionContexts } from './automation-host-reselection'
+import { applyCustomAgent, customAgentFields, withoutCustomAgent } from './automation-custom-agent'
 import { getRepoSshConnectionId } from '../../../shared/execution-host'
 import type { Repo } from '../../../shared/repo-types'
 import { findAutomationRepoForWrite } from '../../../shared/automations/ownership/automation-repo-target'
@@ -39,7 +40,6 @@ import {
   automationContextAfterUpdate,
   getAutomationSchedulerOwner,
   applyAutomationSetupTrust,
-  normalizeAutomationSessionReuse,
   normalizeAutomationSetupDecisionForWorkspaceMode
 } from './automation-context-migration'
 import { refuseManagedOrcadHost } from '../../automations/orcad-fenced-automation'
@@ -58,11 +58,7 @@ export type AutomationDefinitionOperations = {
   recordAutomationRunsMutation?: (runs: readonly AutomationRun[]) => void
 }
 
-export function listAutomations(state: PersistedState): Automation[] {
-  return (state.automations ?? [])
-    .map((automation) => automationWithLaunchSetup(normalizeAutomationSessionReuse(automation)))
-    .sort((left, right) => left.name.localeCompare(right.name))
-}
+export { listAutomations } from './automation-list'
 
 export function createAutomation(
   operations: AutomationDefinitionOperations,
@@ -116,6 +112,7 @@ export function createAutomation(
     precheck: normalizeAutomationPrecheck(input.precheck),
     agentId: input.agentId,
     ...(setup.surface ? { surface: setup.surface } : {}),
+    ...customAgentFields(input),
     ...(setup.launchPreferences !== undefined
       ? { launchPreferences: setup.launchPreferences }
       : {}),
@@ -211,7 +208,7 @@ export function updateAutomation(
   const workspaceMode = updates.workspaceMode ?? current.workspaceMode
   const merged: Automation = {
     ...current,
-    ...definedUpdates,
+    ...withoutCustomAgent(definedUpdates),
     name: updates.name !== undefined ? updates.name.trim() || 'Untitled automation' : current.name,
     precheck: Object.hasOwn(definedUpdates, 'precheck')
       ? normalizeAutomationPrecheck(definedUpdates.precheck)
@@ -276,6 +273,7 @@ export function updateAutomation(
     delete merged[key]
   }
   Object.assign(merged, automationCanonicalLaunchSetup(launchSetupUpdate))
+  applyCustomAgent(merged, current, updates.customAgentId)
   assertAutomationExtraAgentArgs(merged)
   const previousPin = automationWorkspaceSshPin(operations.state, current.workspaceId)
   const workspaceSshPin = automationWorkspaceSshPin(operations.state, merged.workspaceId)

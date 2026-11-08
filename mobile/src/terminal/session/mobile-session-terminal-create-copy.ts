@@ -13,6 +13,11 @@ export const terminalCreateCopy = {
       'Another terminal is opening. Wait, then retry the {{agentName}} chat.',
       { agentName }
     ),
+  customAgentNeedsHost: () =>
+    translate(
+      'session.useTerminalCreateActions.customAgentNeedsHost',
+      'Update Orca on the computer to start custom agents.'
+    ),
   createFailed: () =>
     translate('session.useTerminalCreateActions.createFailed', 'Failed to create terminal'),
   terminalTitle: () => translate('session.useTerminalCreateActions.terminalTitle', 'Terminal'),

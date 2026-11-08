@@ -2366,7 +2366,8 @@
       "sendNotesFailed": "Failed to send notes",
       "inputLocked": "Terminal input is locked by another client.",
       "notesSent": "Notes sent",
-      "sendNotesError": "Couldn't send notes"
+      "sendNotesError": "Couldn't send notes",
+      "customAgentNeedsHost": "Update Orca on the computer to start custom agents."
     },
     "sourceControlLaunchAgent": {
       "savedAgentUnavailable": "The saved agent for this action is not available on this workspace host.",
@@ -4425,7 +4426,8 @@
       "disconnected": "Disconnected"
     },
     "worktreeCreateRetry": {
-      "createFailed": "Failed to create workspace"
+      "createFailed": "Failed to create workspace",
+      "customAgentNeedsHost": "Update Orca on the computer to start custom agents."
     },
     "hostedMerge": {
       "merged": "Merged",

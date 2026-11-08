@@ -9,12 +9,14 @@ import { resolveStartupShell, type AgentStartupShell } from './tui-agent-startup
 import { terminalSessionOptionInputs } from './tui-agent-launch-command'
 import { resolveLocalWindowsAgentStartupShell } from '../../windows-terminal-shell'
 import { withLaunchCommandOverride } from './tui-agent-launch-command-override'
+import { findCustomTuiAgent } from '../catalog/custom-tui-agents'
 
 /** The settings slice a launch reads; hosts pass their whole `GlobalSettings` row. */
 export type AgentStartupSettings = Partial<
   Pick<
     GlobalSettings,
     | 'agentCmdOverrides'
+    | 'customTuiAgents'
     | 'agentDefaultArgs'
     | 'agentLaunchChoices'
     | 'agentDefaultEnv'
@@ -54,13 +56,20 @@ export function resolveAgentStartupPlanInputs(args: {
   sessionOptionsYieldToAgentArgs?: boolean
   /** Orca types into this launch after start (worker, automation, handoff), not a user. */
   suppressStartupUpdatePrompt?: boolean
-  /** Replaces the agent's Settings command for this launch only (a custom agent's). */
-  launchCommand?: string
+  /** A custom agent of `settings`: its command replaces the agent's Settings command for this launch. */
+  customAgentId?: string
 }): AgentStartupPlanInputs {
   const { agent, platform, isRemote, sessionOptions } = args
+  const custom = args.customAgentId
+    ? findCustomTuiAgent(args.settings.customTuiAgents, agent, args.customAgentId)
+    : null
+  // Why: launching the plain agent instead would silently use another provider and account.
+  if (args.customAgentId && !custom) {
+    throw new Error(`Custom agent ${args.customAgentId} is not set up for ${agent} on this host.`)
+  }
   const settings = agentLaunchPermissionSettings(
     agent,
-    withLaunchCommandOverride(args.settings, agent, args.launchCommand),
+    withLaunchCommandOverride(args.settings, agent, custom?.command),
     sessionOptions
   )
   const shell =

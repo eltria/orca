@@ -9,7 +9,8 @@ import {
   getTerminalQuickCommandScope,
   isTerminalAgentQuickCommand
 } from '../../../../../shared/terminal/quick-commands/terminal-quick-commands'
-import { AgentIcon, getAgentLabel } from '@/lib/agent-catalog'
+import { AgentIcon } from '@/lib/agent-catalog'
+import { useAgentLaunchLabel } from '../../agent/use-agent-launch-label'
 import { useClipboardTextCopyFeedback } from '@/hooks/use-clipboard-text-copy-feedback'
 import { cn } from '@/lib/utils'
 import { translate } from '@/i18n/i18n'
@@ -53,6 +54,10 @@ function QuickCommandRow({
   const t = useTranslate()
   const scope = getTerminalQuickCommandScope(command)
   const body = getTerminalQuickCommandBody(command)
+  const agentLabel = useAgentLaunchLabel(
+    isTerminalAgentQuickCommand(command) ? command.agent : 'claude',
+    isTerminalAgentQuickCommand(command) ? command.customAgentId : undefined
+  )
   const { canCopy, copyText, status } = useClipboardTextCopyFeedback(body)
   const commandName = command.label || 'quick command'
 
@@ -97,7 +102,7 @@ function QuickCommandRow({
           ) : null}
           <span className={cn('truncate', isTerminalAgentQuickCommand(command) ? '' : 'font-mono')}>
             {isTerminalAgentQuickCommand(command)
-              ? `${getAgentLabel(command.agent)}: ${body}`
+              ? `${agentLabel}: ${body}`
               : body ||
                 t('auto.components.settings.QuickCommandsPane.0252ddd578', 'No command text')}
           </span>

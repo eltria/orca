@@ -1,10 +1,13 @@
 import { Check } from 'lucide-react'
+import type { CustomTuiAgent } from '../../../../../../shared/agent-launch/catalog/custom-tui-agents'
 import type { TuiAgent } from '../../../../../../shared/agent-launch/catalog/tui-agent'
 
 import { type AgentCatalogEntry, AgentIcon } from '@/lib/agent-catalog'
 import { cn } from '@/lib/utils'
 import { useTranslate } from '@/i18n/use-translate'
 import { SettingsGroup } from '../../section-layout/SettingsGroup'
+
+const NO_CUSTOM_AGENTS: readonly CustomTuiAgent[] = []
 
 function DefaultAgentPill({
   active,
@@ -43,7 +46,10 @@ export function AgentDefaultSetting({
   description,
   onSetDefault,
   defaultOpensAsChat = false,
-  permissions
+  permissions,
+  customAgents = NO_CUSTOM_AGENTS,
+  defaultCustomAgentId,
+  onSetDefaultCustom
 }: {
   defaultAgent: TuiAgent | 'blank' | null
   detectedIds: Set<string> | null
@@ -54,6 +60,10 @@ export function AgentDefaultSetting({
   description: string
   onSetDefault: (agent: TuiAgent | 'blank' | null) => void
   permissions: React.ReactNode
+  /** Custom agents offered as the default, with the one that is (if any). */
+  customAgents?: readonly CustomTuiAgent[]
+  defaultCustomAgentId?: string
+  onSetDefaultCustom?: (custom: CustomTuiAgent) => void
 }): React.JSX.Element {
   const t = useTranslate()
   const storedDefaultAgent =
@@ -79,7 +89,7 @@ export function AgentDefaultSetting({
           {t('auto.components.settings.AgentsPane.92033495ff', 'Auto')}
         </DefaultAgentPill>
         {defaultAgentPills.map((agent) => {
-          const isActive = defaultAgent === agent.id
+          const isActive = defaultAgent === agent.id && !defaultCustomAgentId
           const isUndetected =
             detectedIds !== null && !detectedIds.has(agent.id) && !(isActive && defaultOpensAsChat)
           return (
@@ -102,6 +112,25 @@ export function AgentDefaultSetting({
             </DefaultAgentPill>
           )
         })}
+        {onSetDefaultCustom
+          ? customAgents
+              .filter((custom) => defaultAgentPills.some((agent) => agent.id === custom.agent))
+              .map((custom) => {
+                const isActive = defaultCustomAgentId === custom.id
+                return (
+                  <DefaultAgentPill
+                    key={`custom-agent:${custom.id}`}
+                    active={isActive}
+                    title={custom.command}
+                    onClick={() => (isActive ? onSetDefault('blank') : onSetDefaultCustom(custom))}
+                  >
+                    <AgentIcon agent={custom.agent} size={14} />
+                    {custom.name}
+                    {isActive && <Check className="size-3.5" />}
+                  </DefaultAgentPill>
+                )
+              })
+          : null}
       </div>
       <div data-settings-row="" className="py-3">
         {permissions}

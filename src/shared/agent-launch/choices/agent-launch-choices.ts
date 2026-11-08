@@ -82,6 +82,8 @@ export type AgentLaunchInputViews = {
   agentArgs?: string | null
   sessionOptions?: Readonly<Record<string, string>>
   chatSessionOptions?: Readonly<Record<string, string>>
+  /** A custom agent of the launching host's settings; it always opens a terminal. */
+  customAgentId?: string
 }
 
 export function agentPickerSessionOptions(choices: AgentDedicatedChoices): Record<string, string> {

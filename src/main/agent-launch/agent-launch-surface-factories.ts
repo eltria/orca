@@ -48,6 +48,7 @@ export type AgentLaunchSurfaceFactory = {
     viewMode?: 'terminal' | 'chat'
     /** Account routing overrides merged over the agent environment. */
     accountEnv?: Readonly<Record<string, string>>
+    customAgentId?: string
   }): Promise<{
     handle: string
     /** Omit when the runtime reports no pane; never invent one. */
@@ -109,6 +110,7 @@ export type AgentLaunchWorkspaceFactory = {
     options?: Readonly<Record<string, unknown>>
     /** Account routing overrides merged over the startup agent environment. */
     accountEnv?: Readonly<Record<string, string>>
+    customAgentId?: string
   }): Promise<{
     worktreeId: string
     /** Host-resolved root, available only after creation. */
@@ -158,6 +160,7 @@ export function terminalLaunchInputs(intent: AgentLaunchIntent) {
     ...(intent.cwd ? { cwd: intent.cwd } : {}),
     ...(intent.launchSource ? { launchSource: intent.launchSource } : {}),
     ...(intent.paneKey ? { paneKey: intent.paneKey } : {}),
-    ...(intent.accountEnv ? { accountEnv: intent.accountEnv } : {})
+    ...(intent.accountEnv ? { accountEnv: intent.accountEnv } : {}),
+    ...(intent.customAgentId ? { customAgentId: intent.customAgentId } : {})
   }
 }

@@ -2552,7 +2552,8 @@
       "notesSent": "笔记已发送",
       "sendNotesError": "无法发送笔记",
       "sendNotesFailed": "发送笔记失败",
-      "terminalTitle": "终端"
+      "terminalTitle": "终端",
+      "customAgentNeedsHost": "请先更新电脑上的 Orca，才能启动自定义智能体。"
     },
     "useTerminalInput": {
       "clearFailed": "无法清空终端",
@@ -3821,7 +3822,8 @@
       "trustSubtitle": "工作区启动前，此仓库的 orca.yaml 会在您的电脑上运行。请仅在信任此仓库时运行。"
     },
     "worktreeCreateRetry": {
-      "createFailed": "创建工作区失败"
+      "createFailed": "创建工作区失败",
+      "customAgentNeedsHost": "请先更新电脑上的 Orca，才能启动自定义智能体。"
     }
   },
   "terminal": {

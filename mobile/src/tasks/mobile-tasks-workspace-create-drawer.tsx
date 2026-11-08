@@ -46,7 +46,8 @@ export function renderMobileTasksWorkspaceCreateDrawer(model: ConnectionPresenta
     workspaceCreateSshGate,
     workspaceCreateTargetConnectionId,
     workspaceCreateTargetRepo,
-    workspaceNameDraft
+    workspaceNameDraft,
+    workspaceAgentOptions
   } = model
   const closeDrawer = () => setWorkspaceCreateDraft(null)
   const repositoryTitle = translate('tasks.workspaceCreateDrawer.repository', 'Repository')
@@ -58,7 +59,8 @@ export function renderMobileTasksWorkspaceCreateDrawer(model: ConnectionPresenta
     ? translate('tasks.workspaceCreateDrawer.connectFirst', 'Connect repository first')
     : workspaceAgentDetectionPending
       ? translate('tasks.workspaceCreateDrawer.detectingAgents', 'Detecting agents...')
-      : workspaceAgentLabel(resolvedWorkspaceAgent)
+      : (workspaceAgentOptions.find((option) => option.value === resolvedWorkspaceAgent)?.label ??
+        workspaceAgentLabel(resolvedWorkspaceAgent))
   const creating = workspaceCreateDraft != null && creatingKey === workspaceCreateDraft.item.key
   return (
     <BottomDrawer

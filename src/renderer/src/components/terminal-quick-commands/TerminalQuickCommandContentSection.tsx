@@ -18,7 +18,10 @@ import {
 } from '../../../../shared/terminal/quick-commands/terminal-quick-command-prompt-limit'
 import { Label } from '@/components/ui/label'
 import { AgentLaunchPicker } from '@/components/agent/AgentLaunchPicker'
-import type { AgentPickerEntry } from '../../../../shared/agent-launch/picker/agent-launch-picker'
+import {
+  customAgentPickerDraft,
+  type AgentPickerEntry
+} from '../../../../shared/agent-launch/picker/agent-launch-picker'
 import type { NewTabAgentMenuModel } from '../tab-bar/new-tab-agent-menu-model'
 import { useUiLanguageRevision } from '@/i18n/use-ui-language-revision'
 import { cn } from '@/lib/utils'
@@ -125,11 +128,19 @@ export function TerminalQuickCommandContentSection({
     [unsupportedLabel]
   )
   const selectAgent = useCallback(
-    (nextAgent: TuiAgent) => {
-      draftMemoryRef.current = { ...draftMemoryRef.current, agent: nextAgent }
-      setDraft((current) =>
-        isTerminalAgentQuickCommand(current) ? { ...current, agent: nextAgent } : current
-      )
+    (nextAgent: TuiAgent, customAgentId?: string) => {
+      draftMemoryRef.current = {
+        ...draftMemoryRef.current,
+        agent: nextAgent,
+        agentCustomAgentId: customAgentId
+      }
+      setDraft((current) => {
+        if (!isTerminalAgentQuickCommand(current)) {
+          return current
+        }
+        const { customAgentId: _previous, ...rest } = current
+        return { ...rest, agent: nextAgent, ...(customAgentId ? { customAgentId } : {}) }
+      })
     },
     [draftMemoryRef, setDraft]
   )
@@ -179,13 +190,19 @@ export function TerminalQuickCommandContentSection({
               model={QUICK_COMMAND_PICKER_MODEL}
               entries={entries}
               agent={selectedAgent}
+              includeCustomAgents
+              value={
+                isTerminalAgentQuickCommand(draft) && draft.customAgentId
+                  ? customAgentPickerDraft({ id: draft.customAgentId, agent: selectedAgent })
+                  : undefined
+              }
               emptyLabel={t(
                 'auto.components.terminal.quick.commands.TerminalQuickCommandDialog.346d409ab2',
                 'Choose agent'
               )}
               setupDisabled
               disabled={disabled || !isAgentAction}
-              onPick={selectAgent}
+              onPick={(agent, pickedDraft) => selectAgent(agent, pickedDraft?.customAgentId)}
             />
           </div>
         </div>

@@ -52,6 +52,8 @@ type StartupEnvironment = {
   suppressStartupUpdatePrompt?: boolean
   /** Caller-supplied telemetry attribution, validated leniently at the host boundary. */
   launchSource?: string
+  /** A custom agent of `settings`; its command replaces the agent's for this launch. */
+  customAgentId?: string
 }
 
 /** Choose requested, default or execution-host-detected agent; null means no agent. */
@@ -202,6 +204,7 @@ export async function buildWorktreeStartupForAgent(
     ...(environment.agentArgs !== undefined ? { agentArgs: environment.agentArgs } : {}),
     ...(environment.extraAgentArgs ? { extraAgentArgs: environment.extraAgentArgs } : {}),
     ...(environment.suppressStartupUpdatePrompt ? { suppressStartupUpdatePrompt: true } : {}),
+    ...(environment.customAgentId ? { customAgentId: environment.customAgentId } : {}),
     sessionOptions:
       environment.sessionOptions ?? environment.toSessionOptions(environment.launchPreferences)
   })
@@ -269,6 +272,7 @@ export async function resolveWorktreeCreateAgentStartup(
       suppressStartupUpdatePrompt?: boolean
       launchSource?: string
       onPromptCarry?: (carried: boolean) => void
+      customAgentId?: string
     }
   ) =>
     | Promise<{
@@ -293,7 +297,8 @@ export async function resolveWorktreeCreateAgentStartup(
     ...(args.startupExtraAgentArgs ? { extraAgentArgs: args.startupExtraAgentArgs } : {}),
     ...(args.startupSuppressUpdatePrompt ? { suppressStartupUpdatePrompt: true } : {}),
     ...(args.startupLaunchSource ? { launchSource: args.startupLaunchSource } : {}),
-    ...(args.onStartupPromptCarry ? { onPromptCarry: args.onStartupPromptCarry } : {})
+    ...(args.onStartupPromptCarry ? { onPromptCarry: args.onStartupPromptCarry } : {}),
+    ...(args.startupCustomAgentId ? { customAgentId: args.startupCustomAgentId } : {})
   })
   return args.startupAccountEnv
     ? {

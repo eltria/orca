@@ -34,3 +34,10 @@ export type AutomationLaunchSetupPatch = {
   /** Canonical copies travel inside the strict envelope old hosts reject. */
   copy?: AutomationLaunchSetup
 }
+
+/** What an automation update sends besides the automation's own fields. */
+export type AutomationUpdateExtras = {
+  launchSetupPatch?: AutomationLaunchSetupPatch
+  /** null clears it; a new agentId without one also clears it. */
+  customAgentId?: string | null
+}

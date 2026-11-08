@@ -130,11 +130,16 @@ export function normalizeTerminalQuickCommands(input: unknown): TerminalQuickCom
         continue
       }
       const agentId = agent
+      const customAgentId =
+        typeof record.customAgentId === 'string'
+          ? record.customAgentId.trim().slice(0, MAX_QUICK_COMMAND_ID_LENGTH)
+          : ''
       normalized.push({
         ...base,
         action: 'agent-prompt',
         agent: agentId,
-        prompt: hasPrompt ? String(record.prompt).trimEnd() : ''
+        prompt: hasPrompt ? String(record.prompt).trimEnd() : '',
+        ...(customAgentId ? { customAgentId } : {})
       })
     } else {
       const command = hasCommand ? String(record.command).trimEnd() : ''
@@ -187,10 +192,19 @@ function isNormalizedTerminalQuickCommand(value: unknown, expected: TerminalQuic
   }
   if (isTerminalAgentQuickCommand(expected)) {
     return (
-      hasExactKeys(command, ['id', 'label', 'action', 'agent', 'prompt', 'scope']) &&
+      hasExactKeys(command, [
+        'id',
+        'label',
+        'action',
+        'agent',
+        'prompt',
+        'scope',
+        ...(expected.customAgentId === undefined ? [] : ['customAgentId'])
+      ]) &&
       command.action === 'agent-prompt' &&
       command.agent === expected.agent &&
-      command.prompt === expected.prompt
+      command.prompt === expected.prompt &&
+      command.customAgentId === expected.customAgentId
     )
   }
   return (

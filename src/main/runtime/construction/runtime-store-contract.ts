@@ -138,6 +138,8 @@ export type RuntimeStore = {
     newWorkspaceSetupOnly?: GlobalSettings['newWorkspaceSetupOnly']
     disabledTuiAgents?: GlobalSettings['disabledTuiAgents']
     agentCmdOverrides?: GlobalSettings['agentCmdOverrides']
+    customTuiAgents?: GlobalSettings['customTuiAgents']
+    defaultCustomTuiAgentId?: GlobalSettings['defaultCustomTuiAgentId']
     agentLaunchChoices?: GlobalSettings['agentLaunchChoices']
     agentDefaultArgs?: GlobalSettings['agentDefaultArgs']
     agentDefaultEnv?: GlobalSettings['agentDefaultEnv']

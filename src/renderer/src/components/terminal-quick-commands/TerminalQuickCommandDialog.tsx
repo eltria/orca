@@ -159,6 +159,7 @@ export function TerminalQuickCommandDialog({
           action: 'agent-prompt',
           agent: draft.agent,
           prompt: draft.prompt.trimEnd(),
+          ...(draft.customAgentId ? { customAgentId: draft.customAgentId } : {}),
           scope: selectedScope
         }
       : {

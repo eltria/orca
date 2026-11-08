@@ -58,6 +58,8 @@ export type AgentLaunchIntent = {
   nativeChatDefault?: boolean
   /** `agent.launch`'s `surface`: the user's pick for this launch, ahead of either default. */
   surface?: AgentLaunchSurface
+  /** A custom agent of the host's settings for `agent`; it always starts a terminal. */
+  customAgentId?: string
 }
 
 /** Placement cannot fail a launch: missing groups fall back to the anchor's group, then the active group. */

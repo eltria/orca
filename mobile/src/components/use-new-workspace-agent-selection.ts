@@ -3,6 +3,8 @@ import { isMobileTuiAgentEnabled } from '../tasks/mobile-tui-agents'
 import {
   NEW_WORKTREE_AGENT_OPTIONS,
   NEW_WORKTREE_BLANK_AGENT,
+  newWorktreeAgentOptionKey,
+  newWorktreeCustomAgentOptions,
   resolveNewWorktreeAgentSelection,
   type NewWorktreeAgentOption,
   type NewWorktreeRuntimeSettings
@@ -30,7 +32,8 @@ export function useNewWorkspaceAgentSelection(args: {
     detectedAgentIds: args.detectedAgentIds
   })
   if (
-    selectedAgentState.id !== resolution.selectedAgent.id ||
+    newWorktreeAgentOptionKey(selectedAgentState) !==
+      newWorktreeAgentOptionKey(resolution.selectedAgent) ||
     agentOverriddenState !== resolution.agentOverridden
   ) {
     setSelectedAgent(resolution.selectedAgent)
@@ -46,6 +49,10 @@ export function useNewWorkspaceAgentSelection(args: {
     selectedAgent: resolution.selectedAgent,
     setSelectedAgent,
     setAgentOverridden,
-    pickerAgentOptions: [...visibleAgentOptions, NEW_WORKTREE_BLANK_AGENT]
+    pickerAgentOptions: [
+      ...visibleAgentOptions,
+      ...newWorktreeCustomAgentOptions(args.runtimeSettings),
+      NEW_WORKTREE_BLANK_AGENT
+    ]
   }
 }

@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react'
+import { defaultCustomAgentLaunch } from '@/lib/default-custom-agent-launch'
 import { Maximize2, Minimize2, Minus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -64,6 +65,7 @@ export function FloatingTerminalWindowControls({
     const result = launchAgentInNewTab({
       requestId: newAgentLaunchRequestId(),
       agent: defaultAgent,
+      ...defaultCustomAgentLaunch(defaultAgent),
       worktreeId: FLOATING_TERMINAL_WORKTREE_ID,
       launchSource: 'shortcut',
       // Do not change global activeTabId or dismiss the main editor; select within the floating group below.

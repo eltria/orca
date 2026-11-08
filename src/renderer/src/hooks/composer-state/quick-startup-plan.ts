@@ -57,6 +57,9 @@ export function buildQuickComposerStartup(input: QuickComposerStartupInput): Qui
           settings: settings ?? {},
           agentArgs: input.launchInputs?.agentArgs,
           sessionOptions: input.launchInputs?.sessionOptions,
+          ...(input.launchInputs?.customAgentId
+            ? { customAgentId: input.launchInputs.customAgentId }
+            : {}),
           platform: requireExecutionHostPlatform(input.launchHost),
           shell: input.shell ?? undefined,
           isRemote: input.isRemote

@@ -1,4 +1,5 @@
 import type { TerminalQuickCommand } from '../../../src/shared/terminal/quick-commands/terminal-quick-command-types'
+import type { CustomTuiAgent } from '../../../src/shared/agent-launch/catalog/custom-tui-agents'
 import type { TuiAgent } from '../../../src/shared/agent-launch/catalog/tui-agent'
 import {
   flattenTerminalQuickCommand,
@@ -21,6 +22,8 @@ export function supportsMobileQuickCommands(capabilities: readonly string[] | un
 export type MobileQuickCommandLaunch = {
   agent?: TuiAgent
   options: {
+    /** A custom agent of the host's settings; only the host's agent.launch can start it. */
+    customAgentId?: string
     agentPrompt?: string
     startupCommand?: string
     startupCommandDelivery?: 'shell-ready'
@@ -37,7 +40,13 @@ export function buildMobileQuickCommandLaunch(
     if (!command.prompt.trim() || !supportsTerminalAgentQuickCommand(command.agent)) {
       return null
     }
-    return { agent: command.agent, options: { agentPrompt: command.prompt } }
+    return {
+      agent: command.agent,
+      options: {
+        agentPrompt: command.prompt,
+        ...(command.customAgentId ? { customAgentId: command.customAgentId } : {})
+      }
+    }
   }
   if (!command.command.trim()) {
     return null
@@ -63,15 +72,24 @@ export function getQuickCommandAgentLabel(agent: TuiAgent): string {
   return MOBILE_TUI_AGENT_LABELS[agent] ?? agent
 }
 
-export function getQuickCommandPreview(command: TerminalQuickCommand): string {
+export function getQuickCommandPreview(
+  command: TerminalQuickCommand,
+  customAgents: readonly CustomTuiAgent[] = []
+): string {
   if (isTerminalAgentQuickCommand(command)) {
-    return `${getQuickCommandAgentLabel(command.agent)}: ${command.prompt}`
+    const custom = command.customAgentId
+      ? customAgents.find((entry) => entry.id === command.customAgentId)
+      : undefined
+    return `${custom?.name ?? getQuickCommandAgentLabel(command.agent)}: ${command.prompt}`
   }
   return command.command
 }
 
-export function getQuickCommandDisplayPreview(command: TerminalQuickCommand): string {
-  const preview = getQuickCommandPreview(command)
+export function getQuickCommandDisplayPreview(
+  command: TerminalQuickCommand,
+  customAgents: readonly CustomTuiAgent[] = []
+): string {
+  const preview = getQuickCommandPreview(command, customAgents)
   if (preview.length <= MAX_QUICK_COMMAND_DISPLAY_PREVIEW_LENGTH) {
     return preview
   }

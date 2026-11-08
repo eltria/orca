@@ -170,7 +170,12 @@ export function useNewWorkspaceCreateSubmit(args: {
             selection,
             targetRepoId: selectedRepo.id,
             setupDecision,
-            agent: { choice: normalizeWorkspaceAgent(args.selectedAgent.id) ?? 'blank' },
+            agent: {
+              choice: normalizeWorkspaceAgent(args.selectedAgent.id) ?? 'blank',
+              ...(args.selectedAgent.customAgentId
+                ? { customAgentId: args.selectedAgent.customAgentId }
+                : {})
+            },
             workspaceName: trimmedName || undefined,
             note: trimmedNote,
             nameIsAutoManaged: args.composer.isNameAutoManaged,
@@ -186,6 +191,9 @@ export function useNewWorkspaceCreateSubmit(args: {
             baseName,
             nameWasGenerated: !trimmedName,
             createdWithAgentId,
+            ...(args.selectedAgent.customAgentId
+              ? { customAgentId: args.selectedAgent.customAgentId }
+              : {}),
             comment: trimmedNote,
             setupDecision,
             worktreeCreateIdempotency: args.getWorktreeCreateCutoverSupport(),

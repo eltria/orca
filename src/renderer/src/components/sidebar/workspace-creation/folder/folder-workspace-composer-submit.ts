@@ -112,6 +112,7 @@ export async function submitFolderWorkspaceCreate({
           agentCmdOverrides,
           agentArgs,
           sessionOptions,
+          ...(launchInputs?.customAgentId ? { customAgentId: launchInputs.customAgentId } : {}),
           agentEnv,
           platform: launchPlatform,
           shell: launchShell,
@@ -124,6 +125,7 @@ export async function submitFolderWorkspaceCreate({
               settings: effectiveSettings ?? { agentCmdOverrides },
               agentArgs: settings ? agentArgs : (agentArgs ?? null),
               sessionOptions,
+              ...(launchInputs?.customAgentId ? { customAgentId: launchInputs.customAgentId } : {}),
               platform: launchPlatform,
               shell: launchShell,
               isRemote: launchIsRemote

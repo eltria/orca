@@ -1,3 +1,4 @@
+import { workspaceChoiceAgent } from './workspace-agent-selection'
 import type {
   GitHubWorkItem,
   GitLabWorkItem,
@@ -137,7 +138,7 @@ export function sortSparsePresetsByName(presets: SparsePreset[]): SparsePreset[]
 }
 
 export function workspaceAgentIconId(agent: WorkspaceAgentChoice): string {
-  return agent === 'blank' ? '__blank__' : agent
+  return workspaceChoiceAgent(agent) ?? '__blank__'
 }
 
 export type ProjectRepoNotInOrcaPrompt = {

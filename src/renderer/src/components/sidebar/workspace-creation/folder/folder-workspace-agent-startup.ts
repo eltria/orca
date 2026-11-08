@@ -55,6 +55,7 @@ export function buildFolderWorkspaceLinkedStartupPlan(args: {
   agentArgs?: string | null
   sessionOptions?: Readonly<Record<string, SessionOptionValue>>
   sessionOptionsOverrideAgentArgs?: boolean
+  customAgentId?: string
   agentEnv?: Record<string, string>
   platform: NodeJS.Platform
   shell?: AgentStartupShell
@@ -65,6 +66,7 @@ export function buildFolderWorkspaceLinkedStartupPlan(args: {
     settings: args.settings ?? { agentCmdOverrides: args.agentCmdOverrides },
     agentArgs: args.settings ? args.agentArgs : (args.agentArgs ?? null),
     sessionOptions: args.sessionOptions,
+    ...(args.customAgentId ? { customAgentId: args.customAgentId } : {}),
     platform: args.platform,
     shell: args.shell,
     isRemote: args.isRemote

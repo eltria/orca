@@ -128,7 +128,8 @@ export function automationTerminalLaunchInputs(automation: Automation) {
   return {
     ...(agentArgs !== undefined ? { agentArgs } : {}),
     ...(sessionOptions ? { sessionOptions } : {}),
-    ...(setup.extraAgentArgs ? { extraAgentArgs: setup.extraAgentArgs } : {})
+    ...(setup.extraAgentArgs ? { extraAgentArgs: setup.extraAgentArgs } : {}),
+    ...(automation.customAgentId ? { customAgentId: automation.customAgentId } : {})
   }
 }
 

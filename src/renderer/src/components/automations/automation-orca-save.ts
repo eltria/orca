@@ -7,13 +7,13 @@ import { capturedAutomationOwner } from './automation-captured-owner'
 import {
   automationChatSupport,
   automationDraftLaunchSetup,
-  automationCopyLaunchSetup,
   automationLaunchWorkspace
 } from './automation-launch-surface'
 import { toast } from 'sonner'
+import { customAgentUpdateFor } from './automation-custom-agent-payload'
+import { automationCreateInputFor } from './automation-create-input-for'
 import type {
   Automation,
-  AutomationCreateInput,
   AutomationUpdateInput
 } from '../../../../shared/automations/automation-definition'
 import { getRepoExecutionHostId } from '../../../../shared/execution-host'
@@ -190,6 +190,7 @@ export async function saveOrcaAutomation(
     ...(edited('prompt') ? { prompt: draft.prompt } : {}),
     ...(edited('precheckCommand') || edited('precheckTimeoutSeconds') ? { precheck } : {}),
     ...(edited('agentId') ? { agentId: draft.agentId } : {}),
+    ...customAgentUpdateFor(currentAutomation, draft.customAgentId, edited),
     ...(!currentAutomation ||
     draft.launchSetupPatch ||
     edited('surface') ||
@@ -218,29 +219,16 @@ export async function saveOrcaAutomation(
     updates.rrule = rrule
     updates.dtstart = time.now
   }
-  const createInput: AutomationCreateInput = automationCopyLaunchSetup(currentAutomation, updates, {
-    name: currentAutomation ? currentAutomation.name : draft.name,
-    prompt: currentAutomation ? currentAutomation.prompt : draft.prompt,
-    precheck: currentAutomation ? currentAutomation.precheck : precheck,
-    agentId: currentAutomation ? currentAutomation.agentId : draft.agentId,
-    ...launchSetup,
-    runContext: currentAutomation ? currentAutomation.runContext : runContext,
-    projectId: currentAutomation ? currentAutomation.projectId : draft.projectId,
-    workspaceMode: currentAutomation ? currentAutomation.workspaceMode : draft.workspaceMode,
-    workspaceId: currentAutomation ? currentAutomation.workspaceId : draft.workspaceId,
-    baseBranch: currentAutomation ? currentAutomation.baseBranch : draft.baseBranch.trim() || null,
-    setupDecision: currentAutomation ? currentAutomation.setupDecision : setupDecision,
-    setupTrustHash: currentAutomation ? currentAutomation.setupTrustHash : setupTrustHash,
-    reuseSession: currentAutomation
-      ? currentAutomation.reuseSession
-      : draft.workspaceMode === 'existing' && draft.reuseSession,
+  const createInput = automationCreateInputFor(currentAutomation, updates, draft, {
+    launchSetup,
+    precheck,
+    runContext,
+    setupDecision,
+    setupTrustHash,
     timezone,
-    rrule: currentAutomation ? currentAutomation.rrule : rrule,
-    dtstart: currentAutomation ? currentAutomation.dtstart : (updates.dtstart ?? time.now),
-    missedRunGraceMinutes: currentAutomation
-      ? currentAutomation.missedRunGraceMinutes
-      : missedRunGraceMinutes,
-    ...updates
+    rrule,
+    dtstart: updates.dtstart ?? time.now,
+    missedRunGraceMinutes
   })
 
   const destinationResult = resolveAutomationEditDestination({

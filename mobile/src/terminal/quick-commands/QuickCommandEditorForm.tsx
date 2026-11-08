@@ -42,6 +42,8 @@ type Props = {
   agentPromptMaxLength: number | null
   onChange: (patch: Partial<QuickCommandDraft>) => void
   onOpenAgentPicker: () => void
+  /** The picked custom agent's name, shown in place of its base agent's. */
+  customAgentName?: string
   onCancel: () => void
   onSave: () => void
 }
@@ -93,6 +95,7 @@ export function QuickCommandEditorForm({
   agentPromptMaxLength,
   onChange,
   onOpenAgentPicker,
+  customAgentName,
   onCancel,
   onSave
 }: Props) {
@@ -139,7 +142,9 @@ export function QuickCommandEditorForm({
             {draft.agent ? (
               <View style={styles.selectValue}>
                 <MobileAgentIcon agentId={draft.agent} size={16} />
-                <Text style={styles.selectValueText}>{getQuickCommandAgentLabel(draft.agent)}</Text>
+                <Text style={styles.selectValueText}>
+                  {customAgentName ?? getQuickCommandAgentLabel(draft.agent)}
+                </Text>
               </View>
             ) : (
               <Text style={styles.selectPlaceholder}>
