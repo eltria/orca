@@ -1,4 +1,5 @@
 import { app, powerMonitor } from 'electron'
+import { FORK_BUILD_UPDATES_DISABLED } from './fork-build-update-policy'
 import type { BrowserWindow } from 'electron'
 import type { ReleaseBuild, ReleaseChannel } from '../../../shared/release-channel'
 import type { ReleaseBuildListOptions } from '../releases/updater-release-build-cache'
@@ -140,7 +141,7 @@ export class UpdaterSetup extends UpdaterDownloadInstall {
       this.sendErrorStatus(`The server update did not complete: ${serveHandoffFailure}`, true)
     }
 
-    if (!app.isPackaged) {
+    if (!app.isPackaged || FORK_BUILD_UPDATES_DISABLED) {
       return
     }
 
