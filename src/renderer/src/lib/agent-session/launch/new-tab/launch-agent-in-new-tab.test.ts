@@ -149,6 +149,22 @@ describe('launchAgentInNewTab', () => {
     }
   )
 
+  it('starts and resumes through a launch command instead of the Settings command', async () => {
+    store.settings.agentCmdOverrides = { claude: 'claude-ds' }
+    store.settings.nativeChatProviders = { claude: true }
+    const { launchAgentInNewTab } = await import('./launch-agent-in-new-tab')
+    launchAgentInNewTab({
+      requestId: 'quick-command-launch',
+      agent: 'claude',
+      worktreeId: 'wt-1',
+      launchPlatform: 'darwin',
+      launchCommand: 'aione launch claude'
+    })
+    const startup = queuedStartups()[0]
+    expect(startup?.command).toMatch(/^aione launch claude(\s|$)/)
+    expect(startup?.launchConfig?.agentCommand).toMatch(/^aione launch claude(\s|$)/)
+  })
+
   it.each(['terminal', 'declined-without-callback'] as const)(
     'keeps canonical saved source and deliberate effort through actual %s startup',
     async (route) => {

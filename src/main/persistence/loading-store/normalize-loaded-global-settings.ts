@@ -3,6 +3,7 @@ import { normalizeNativeChatAppearanceSettings } from '../../../shared/native-ch
 import { getDefaultVoiceSettings } from '../../../shared/constants'
 import { normalizePRBotAuthorOverrides } from '../../../shared/source-control/review-comments/pr-bot-author-overrides'
 import { normalizeTerminalQuickCommands } from '../../../shared/terminal/quick-commands/terminal-quick-commands'
+import { normalizeCustomTuiAgents } from '../../../shared/agent-launch/catalog/custom-tui-agents'
 import { normalizeOpenInApplications } from '../../../shared/open-in-applications'
 import { normalizeTerminalShortcutPolicy } from '../../../shared/keybindings'
 import { normalizeAppIconId } from '../../../shared/app-icon'
@@ -137,6 +138,7 @@ export function normalizeLoadedGlobalSettings(
     terminalScrollbackRows: migratedTerminalScrollback.rows,
     terminalDefaultShell: normalizeTerminalDefaultShell(parsed.settings?.terminalDefaultShell),
     terminalQuickCommands: normalizeTerminalQuickCommands(parsed.settings?.terminalQuickCommands),
+    customTuiAgents: normalizeCustomTuiAgents(parsed.settings?.customTuiAgents),
     terminalCustomThemes: normalizeTerminalCustomThemes(parsed.settings?.terminalCustomThemes),
     ...pluginOwnedSettings,
     ...syncLegacyMatchTerminalSidebar(

@@ -4,7 +4,11 @@ import {
   useAgentPickerInventoryEntries,
   type AgentPickerInventorySource
 } from '../agent/use-agent-launch-picker-inventory'
-import { buildAgentPickerLaunchOptions } from './tab-agent-launch-options'
+import {
+  buildAgentPickerLaunchOptions,
+  buildCustomAgentLaunchOptions
+} from './tab-agent-launch-options'
+import { launchableCustomAgents } from './custom-agent-menu-rows'
 import TabBarCreateEntry from './TabBarCreateEntry'
 import type { TabBarCreateEntryProps } from './tab-create-entry-props'
 
@@ -17,9 +21,20 @@ export function TabBarAgentPickerEntry({
 }): React.JSX.Element {
   const entries = useAgentPickerInventoryEntries(inventory)
   const commandOverrides = useAppStore((state) => state.settings?.agentCmdOverrides)
-  const launchOptions = useMemo(
-    () => buildAgentPickerLaunchOptions(entries, commandOverrides),
-    [entries, commandOverrides]
-  )
+  const customAgents = useAppStore((state) => state.settings?.customTuiAgents)
+  const launchOptions = useMemo(() => {
+    const rows = entries.flatMap((entry) => entry.rows)
+    const runnable = entries.filter((entry) => entry.surfaces.includes('terminal'))
+    return [
+      ...buildAgentPickerLaunchOptions(entries, commandOverrides),
+      ...buildCustomAgentLaunchOptions(
+        launchableCustomAgents(
+          customAgents,
+          runnable.map((entry) => entry.agent)
+        ),
+        rows
+      )
+    ]
+  }, [entries, commandOverrides, customAgents])
   return <TabBarCreateEntry {...props} agentPickerEntries={entries} agentOptions={launchOptions} />
 }

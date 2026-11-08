@@ -15,6 +15,8 @@ import { normalizeMatchQuery, tokenizeMatchValue } from './query-token-match'
 import type { TuiAgent } from '../../../../shared/agent-launch/catalog/tui-agent'
 import type { Translate } from '@/i18n/use-translate'
 import type { ActiveOption } from './tab-create-entry-active-option'
+import type { CustomTuiAgent } from '../../../../shared/agent-launch/catalog/custom-tui-agents'
+import { customAgentMenuRow } from './custom-agent-menu-rows'
 
 export type TabAgentLaunchOption = {
   agent: TuiAgent
@@ -78,6 +80,27 @@ export function buildTabAgentLaunchOptions(
       label
     }
   })
+}
+
+/** Search entries for custom agents, found by their name or command. */
+export function buildCustomAgentLaunchOptions(
+  customAgents: readonly CustomTuiAgent[],
+  rows: readonly NewTabAgentMenuRow[]
+): TabAgentLaunchOption[] {
+  return customAgents.map((custom) => ({
+    agent: custom.agent,
+    id: `custom-agent:${custom.id}`,
+    label: custom.name,
+    aliases: [
+      ...new Set(
+        [custom.name, custom.command].flatMap((value) => [
+          normalizeAgentAlias(value),
+          compactAgentAlias(value)
+        ])
+      )
+    ],
+    row: customAgentMenuRow(custom, rows)
+  }))
 }
 
 export function buildTabAgentLaunchOptionsFromRows(

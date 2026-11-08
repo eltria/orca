@@ -18,7 +18,8 @@ export function AgentDetectionCatalog({
   activeServerEnvironmentId,
   activeServerName,
   onRefresh,
-  getRowProps
+  getRowProps,
+  afterInstalled
 }: {
   detectedAgents: AgentCatalogEntry[]
   undetectedAgents: AgentCatalogEntry[]
@@ -29,6 +30,8 @@ export function AgentDetectionCatalog({
   activeServerName: string | null
   onRefresh: () => void
   getRowProps: (agent: AgentCatalogEntry, isDetected: boolean) => AgentCatalogRowProps
+  /** Shown between the installed agents and the ones available to install. */
+  afterInstalled?: React.ReactNode
 }): React.JSX.Element {
   const t = useTranslate()
   return (
@@ -58,6 +61,7 @@ export function AgentDetectionCatalog({
           const lastInSection = indexInSection === sectionLength - 1
           return (
             <Fragment key={agent.id}>
+              {firstInSection && !installed ? afterInstalled : null}
               {firstInSection ? (
                 <SettingsGroupHeader
                   className={cn('mb-3', index > 0 && 'mt-8')}
@@ -134,6 +138,7 @@ export function AgentDetectionCatalog({
             </Fragment>
           )
         })}
+        {undetectedAgents.length === 0 ? afterInstalled : null}
       </section>
 
       {detectionPending && !detectionFailed && (

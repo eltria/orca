@@ -17,6 +17,8 @@ import { agentLaunchPromptOwnership, newAgentPromptOutcome } from '@/lib/new-age
 import { activeAgentNotesSendFailureMessage } from '@/lib/active-agent-note-send-result'
 import { AgentSettingsMenuItem } from '@/components/agent/AgentSettingsMenuItem'
 import { TabAgentSurfaceChoiceRow } from './TabAgentSurfaceChoiceRow'
+import { CustomAgentMenuItems } from './CustomAgentMenuItems'
+import { AgentSurfaceLaunchButton } from '@/components/agent/AgentSurfaceLaunchButton'
 import {
   DropdownMenuItem,
   DropdownMenuSeparator,
@@ -90,8 +92,8 @@ export function useTabAgentMenuLaunch({
         return false
       }
       const { agent } = row
-      const entry = getCatalogEntry(agent)
-      const label = entry?.label ?? agent
+      const custom = row.kind === 'cli' ? row.custom : undefined
+      const label = custom?.name ?? getCatalogEntry(agent)?.label ?? agent
       const result = launchAgentInNewTab({
         requestId: newAgentLaunchRequestId(),
         focusIntent: captureNativeChatComposerFocusIntent(),
@@ -102,6 +104,7 @@ export function useTabAgentMenuLaunch({
             }
           : {}),
         agent,
+        ...(custom ? { launchCommand: custom.command, quickCommandLabel: custom.name } : {}),
         ...(draft
           ? agentPickerFreshLaunchInputs(
               draft,
@@ -331,6 +334,7 @@ export function ProjectedAgentMenuItems({
           )
         })
       )}
+      <CustomAgentMenuItems {...{ rows, detectedIds, disabled, runLaunch }} />
       <AgentSettingsMenuItem onSelect={openAgentSettings} />
     </>
   )

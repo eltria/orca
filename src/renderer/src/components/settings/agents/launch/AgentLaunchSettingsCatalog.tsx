@@ -47,6 +47,7 @@ import {
 import { readNativeDetectedAgents } from '@/store/slices/agent-inventory/local-detected-agent-store-state'
 import { useDetectedAgents, type AgentDetectionTarget } from '@/hooks/useDetectedAgents'
 import { AgentDefaultSetting } from '@/components/settings/agents/launch/AgentDefaultSetting'
+import { CustomTuiAgentsSection } from '@/components/settings/agents/launch/CustomTuiAgentsSection'
 import { AgentDetectionCatalog } from '@/components/settings/agents/launch/AgentDetectionCatalog'
 import type { AgentCatalogRowProps } from '@/components/settings/agents/launch/AgentCatalogRow'
 import { HostAgentEnvironmentEditor } from '@/components/settings/agents/launch/HostAgentEnvironmentEditor'
@@ -385,6 +386,14 @@ export function AgentLaunchSettingsCatalog({
           refreshSettings?.()
         }}
         getRowProps={rowProps}
+        afterInstalled={
+          local ? (
+            <CustomTuiAgentsSection
+              settings={local.settings}
+              updateSettings={local.updateSettings}
+            />
+          ) : null
+        }
       />
     </>
   )

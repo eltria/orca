@@ -246,6 +246,7 @@ export function buildDefaultSettings(args: {
     zcodePlanSite: 'zai',
     geminiCliOAuthEnabled: false,
     agentCmdOverrides: {},
+    customTuiAgents: [],
     // Arguments hold only the user's own text; the permission flag comes from the choice below.
     agentDefaultArgs: {},
     agentLaunchChoices: {},
