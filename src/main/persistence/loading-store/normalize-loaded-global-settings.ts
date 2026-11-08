@@ -7,6 +7,7 @@ import {
   normalizeCustomTuiAgents,
   normalizeDefaultCustomTuiAgentId
 } from '../../../shared/agent-launch/catalog/custom-tui-agents'
+import { FORK_CUSTOM_TUI_AGENT_SEED } from './fork-custom-agent-seed'
 import { normalizeOpenInApplications } from '../../../shared/open-in-applications'
 import { normalizeTerminalShortcutPolicy } from '../../../shared/keybindings'
 import { normalizeAppIconId } from '../../../shared/app-icon'
@@ -141,7 +142,9 @@ export function normalizeLoadedGlobalSettings(
     terminalScrollbackRows: migratedTerminalScrollback.rows,
     terminalDefaultShell: normalizeTerminalDefaultShell(parsed.settings?.terminalDefaultShell),
     terminalQuickCommands: normalizeTerminalQuickCommands(parsed.settings?.terminalQuickCommands),
-    customTuiAgents: normalizeCustomTuiAgents(parsed.settings?.customTuiAgents),
+    customTuiAgents: normalizeCustomTuiAgents(
+      parsed.settings?.customTuiAgents ?? FORK_CUSTOM_TUI_AGENT_SEED
+    ),
     defaultCustomTuiAgentId: normalizeDefaultCustomTuiAgentId(
       parsed.settings?.defaultCustomTuiAgentId
     ),

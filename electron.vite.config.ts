@@ -251,6 +251,13 @@ export const electronViteConfig: UserConfig = {
       ORCA_BUILD_COMMIT: ORCA_BUILD_COMMIT_LITERAL,
       // eltria/orca fork: official updates would replace the fork's patches.
       ORCA_FORK_UPDATES_OFF: 'true',
+      // eltria/orca fork: the owner's Claude wrappers (~/claude-model/bin), as in their Paseo profiles.
+      ORCA_FORK_CUSTOM_TUI_AGENTS: JSON.stringify([
+        { id: 'axis', name: 'axis', agent: 'claude', command: 'claude-axis' },
+        { id: 'cpa', name: 'cpa', agent: 'claude', command: 'claude-cpa' },
+        { id: 'aione', name: 'aione', agent: 'claude', command: 'aione launch claude' },
+        { id: 'ds', name: 'ds', agent: 'claude', command: 'claude-ds' }
+      ]),
       ...DARK_BUILD_DEFINES
     },
     // @xterm/headless declares exports:null; point Vite directly at its published CJS main to permit inlining.
