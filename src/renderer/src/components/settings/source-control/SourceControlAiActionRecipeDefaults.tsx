@@ -164,7 +164,7 @@ export function SourceControlAiActionRecipeDefaults({
   const onActionAgentChange = async (
     actionId: SourceControlActionId,
     value: string,
-    choice?: Pick<SourceControlActionRecipe, 'surface'>
+    choice?: Pick<SourceControlActionRecipe, 'surface' | 'customAgentId'>
   ): Promise<void> => {
     const agentId =
       value === '__default_agent__'
@@ -177,8 +177,12 @@ export function SourceControlAiActionRecipeDefaults({
     const saved = await writeActionDefault((actions) => {
       const next = setSourceControlActionAgentDefault(actions, actionId, agentId)
       if (choice) {
-        const { surface: _previous, ...recipe } = next[actionId] ?? {}
-        next[actionId] = { ...recipe, ...(choice.surface ? { surface: choice.surface } : {}) }
+        const { surface: _previous, customAgentId: _custom, ...recipe } = next[actionId] ?? {}
+        next[actionId] = {
+          ...recipe,
+          ...(choice.surface ? { surface: choice.surface } : {}),
+          ...(choice.customAgentId ? { customAgentId: choice.customAgentId } : {})
+        }
       }
       return next
     })
@@ -249,6 +253,7 @@ export function SourceControlAiActionRecipeDefaults({
                 />
               }
               surface={recipe?.surface}
+              customAgentId={recipe?.customAgentId}
               onAgentChange={(id, value, choice) => void onActionAgentChange(id, value, choice)}
               launchPreferences={actionRecipeDraftState.values[actionId].launchPreferences}
               onLaunchPreferencesChange={(id, value, userArgs, nodes) =>

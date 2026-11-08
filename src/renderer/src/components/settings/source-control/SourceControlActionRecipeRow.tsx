@@ -65,9 +65,10 @@ type SourceControlActionRecipeRowProps<ActionId extends AiActionId> = {
   onAgentChange: (
     actionId: ActionId,
     value: string,
-    choice?: Pick<SourceControlActionRecipe, 'surface'>
+    choice?: Pick<SourceControlActionRecipe, 'surface' | 'customAgentId'>
   ) => void
   surface?: SourceControlActionRecipe['surface']
+  customAgentId?: string
   /** Launch actions only, for chats and terminals alike; text actions run headless through CLI arguments. */
   launchPreferences?: SourceControlActionLaunchPreferences
   onLaunchPreferencesChange?: (
@@ -117,6 +118,7 @@ export function SourceControlActionRecipeRow<ActionId extends AiActionId>({
   repoOverrideNote,
   onAgentChange,
   surface,
+  customAgentId,
   launchPreferences,
   onLaunchPreferencesChange,
   onTemplateChange,
@@ -162,6 +164,7 @@ export function SourceControlActionRecipeRow<ActionId extends AiActionId>({
               draftScope={draftScope}
               agent={selectedAgent && !isCustomAgentId(selectedAgent) ? selectedAgent : null}
               surface={surface}
+              customAgentId={customAgentId}
               disabled={isSavingTemplate}
               selection={canonicalSourceControlActionSelection({
                 ...draftValue,
@@ -194,7 +197,8 @@ export function SourceControlActionRecipeRow<ActionId extends AiActionId>({
               draftScope={draftScope}
               disabled={isSavingTemplate}
               defaultAgentLabel={defaultAgentLabel}
-              onAgentChange={(value) => onAgentChange(actionId, value)}
+              customAgentId={customAgentId}
+              onAgentChange={(value, choice) => onAgentChange(actionId, value, choice)}
               onChange={(choice, agentArgs, edits) =>
                 onTextModelChoiceChange?.(actionId, choice, agentArgs, edits)
               }

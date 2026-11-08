@@ -196,7 +196,7 @@ export function useRepositorySourceControlAiGlobalUx({
   const updateActionAgent = (
     actionId: SourceControlActionId,
     value: string,
-    choice?: Pick<SourceControlActionRecipe, 'surface'>
+    choice?: Pick<SourceControlActionRecipe, 'surface' | 'customAgentId'>
   ): void => {
     const agentId =
       value === DEFAULT_AGENT_VALUE

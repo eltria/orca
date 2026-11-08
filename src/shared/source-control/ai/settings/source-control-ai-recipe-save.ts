@@ -1,3 +1,4 @@
+import { isTuiAgent } from '../../../agent-launch/catalog/tui-agent-config'
 import { sourceControlActionRecipeEntry } from '../recipes/source-control-action-selection'
 import { trimActionArgumentDocument } from '../recipes/source-control-action-argument-document'
 import { demoteDisplacedActionArgumentChoices } from '../recipes/source-control-action-launch-preferences'
@@ -41,6 +42,7 @@ type SaveSourceControlActionRecipeInput = {
 
 type ReadCompatibleActionRecipe = {
   agentId?: SourceControlActionRecipe['agentId']
+  customAgentId?: string
   commandInputTemplate?: string | null
   agentArgs?: string | null
   argumentChoices?: SourceControlActionRecipe['argumentChoices']
@@ -95,6 +97,9 @@ function normalizeCompleteRecipe(
     ...trimActionArgumentDocument({ agentArgs, argumentChoices: recipe.argumentChoices }),
     ...(rawAgentArgs === null ? { agentArgs: null } : {}),
     agentId: recipe.agentId ?? null,
+    ...(recipe.customAgentId && isTuiAgent(recipe.agentId)
+      ? { customAgentId: recipe.customAgentId }
+      : {}),
     commandInputTemplate,
 
     ...(recipe.launchPreferences

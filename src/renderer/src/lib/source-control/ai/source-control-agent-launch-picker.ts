@@ -86,6 +86,7 @@ export function sameSourceControlSetupSelection(
   const y = b.current.argumentChoices
   return (
     a.current.agentId === b.current.agentId &&
+    a.current.customAgentId === b.current.customAgentId &&
     a.current.surface === b.current.surface &&
     a.current.agentArgs === b.current.agentArgs &&
     (x === y ||

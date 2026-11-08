@@ -1,3 +1,8 @@
+import {
+  resolveSourceControlActionPreferredSurface,
+  resolveSourceControlActionRequestedSurface,
+  sourceControlActionCustomAgentLaunch
+} from './source-control-action-surface'
 import { projectAgentLaunchInputViews } from '../../../agent-launch/choices/agent-launch-profile'
 import { reconcileAgentChoiceArgsDetailed } from '../../../agent-launch/choices/agent-choice-reconciliation'
 import type {
@@ -137,21 +142,6 @@ function selectedActionInputViews(
   })
 }
 
-/** Saved Terminal is strict; saved Chat uses supported routing with Terminal fallback. */
-export function resolveSourceControlActionRequestedSurface(
-  recipe: Pick<SourceControlActionRecipe, 'agentId' | 'surface'>,
-  agent: TuiAgent
-): 'terminal' | undefined {
-  return recipe.surface === 'terminal' && recipe.agentId === agent ? 'terminal' : undefined
-}
-
-export function resolveSourceControlActionPreferredSurface(
-  recipe: Pick<SourceControlActionRecipe, 'agentId' | 'surface'>,
-  agent: TuiAgent
-): 'chat' | undefined {
-  return recipe.agentId === agent && recipe.surface === 'chat' ? 'chat' : undefined
-}
-
 type ActionLaunchProjectionInput = ({ basePrompt: string } | { renderedPrompt: string }) & {
   settings?: AgentLaunchProfileSettings | null
 }
@@ -200,7 +190,8 @@ export function projectSelectedSourceControlActionLaunch(
     preferredSurface: liveChoice?.requestedSurface
       ? undefined
       : resolveSourceControlActionPreferredSurface(recipe, agent),
-    selectedExecutionHostId: liveChoice?.executionHostId
+    selectedExecutionHostId: liveChoice?.executionHostId,
+    ...sourceControlActionCustomAgentLaunch(recipe, agent)
   }
 }
 

@@ -210,7 +210,8 @@ export function useSourceControlAgentActionDialog({
           : previous,
         agent,
         selectedAgent,
-        saved
+        saved,
+        draft?.customAgentId
       )
       return draft && entry ? applySourceControlPickerDraft(picked, entry, draft) : picked
     })

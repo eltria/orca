@@ -37,6 +37,7 @@ export function generationParamsToActionRecipe(
 ): SourceControlActionRecipe {
   return {
     agentId: params.agentId,
+    ...(params.customAgentId ? { customAgentId: params.customAgentId } : {}),
     commandInputTemplate: params.commandInputTemplate ?? '{basePrompt}',
     ...(params.agentArgs !== undefined ? { agentArgs: params.agentArgs } : {})
   }

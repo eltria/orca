@@ -257,6 +257,7 @@ const SelectedRepositoryActionRows = memo(
                       draftScope={draftScopes.get(actionId)}
                       agent={selectedAgent}
                       surface={recipe.surface}
+                      customAgentId={recipe.customAgentId}
                       cli={observation.selectionFor(selectedAgent, recipe.surface).cli}
                       observation={observation}
                       canSaveSurface={canSaveSurface}
@@ -294,7 +295,10 @@ const SelectedRepositoryActionRows = memo(
                       }}
                       draftScope={draftScopes.get(actionId)}
                       disabled={!hasOverride || isSavingAction}
-                      onAgentChange={(value) => onActionAgentChange(actionId, value)}
+                      customAgentId={recipe.customAgentId}
+                      onAgentChange={(value, choice) =>
+                        onActionAgentChange(actionId, value, choice)
+                      }
                       onChange={(choice, agentArgs, edits) =>
                         onActionTextModelChoice?.(actionId, choice, agentArgs, edits)
                       }

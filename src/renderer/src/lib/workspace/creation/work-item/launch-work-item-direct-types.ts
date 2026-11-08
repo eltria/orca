@@ -43,6 +43,8 @@ export type LaunchWorkItemDirectArgs = {
   telemetrySource?: WorkspaceCreateTelemetrySource
   agentLaunchPreferences?: AgentLaunchPreferences
   agentOverride?: TuiAgent
+  /** For `agentOverride`: a custom agent of this host to start instead, in a terminal. */
+  customAgentId?: string
   agentArgs?: string | null
   actionAgentArgs?: string
   /** The saved choice for `agentOverride`; a chat seeds it and a terminal applies it as flags. */

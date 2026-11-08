@@ -189,6 +189,8 @@ export function SourceControlAgentActionDialogForm({
           </Label>
           {hasEnabledAgents || selectedAgent ? (
             <AgentLaunchPicker
+              includeCustomAgents
+              customAgentId={selectedSetup.current.customAgentId}
               model={surfaceRows.model}
               worktreeId={surfaceRows.worktreeId}
               agent={selectedAgent}

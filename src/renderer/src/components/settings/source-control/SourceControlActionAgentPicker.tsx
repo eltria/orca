@@ -32,6 +32,8 @@ type PickerProps = {
   agent: TuiAgent | null
   draftScope?: object
   surface?: SourceControlActionRecipe['surface']
+  /** The action's custom agent for `agent`. */
+  customAgentId?: string
   repoId?: string
   disabled?: boolean
   selection?: CurrentActionSelection
@@ -40,7 +42,10 @@ type PickerProps = {
     previous: CurrentActionSelection,
     argumentsAuthored: boolean
   ) => void
-  onPick: (agent: TuiAgent | null, choice: Pick<SourceControlActionRecipe, 'surface'>) => void
+  onPick: (
+    agent: TuiAgent | null,
+    choice: Pick<SourceControlActionRecipe, 'surface' | 'customAgentId'>
+  ) => void
 }
 
 export function SourceControlActionAgentPicker(props: PickerProps) {
@@ -116,7 +121,12 @@ export function SourceControlActionAgentPickerView(props: ViewProps) {
           : props.canSaveSurface
             ? savedSurfaceForPick(props.observation.model, agent, surface, entry)
             : undefined
-      if (!draft || props.agent !== agent || props.surface !== saved) {
+      // A custom agent saves only itself; it always opens a terminal.
+      if (draft?.customAgentId) {
+        props.onPick(agent, { surface: 'terminal', customAgentId: draft.customAgentId })
+        return
+      }
+      if (!draft || props.agent !== agent || props.surface !== saved || props.customAgentId) {
         props.onPick(agent, { surface: saved })
       }
       if (draft && entry) {
@@ -158,6 +168,8 @@ const SelectedSourceControlActionAgentPicker = memo(
     const preview = sourceControlActionAgentPreview(observation, props.agent)
     return (
       <AgentLaunchPicker
+        includeCustomAgents
+        customAgentId={props.customAgentId}
         draftScope={props.draftScope}
         model={observation.model}
         agent={props.agent}
@@ -189,6 +201,7 @@ const SelectedSourceControlActionAgentPicker = memo(
   (a, b) =>
     a.agent === b.agent &&
     a.surface === b.surface &&
+    a.customAgentId === b.customAgentId &&
     a.cli === b.cli &&
     a.disabled === b.disabled &&
     a.draftScope === b.draftScope &&

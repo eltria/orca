@@ -116,7 +116,12 @@ export function resolveActionRecipeForTextOperation(
   source: SourceControlAiSettings,
   repoOverrides: RepoSourceControlAiOverrides | null | undefined,
   operation: AiTextOperation
-): { agentId?: TuiAgent | CustomAgentId | null; commandInputTemplate: string; agentArgs?: string } {
+): {
+  agentId?: TuiAgent | CustomAgentId | null
+  customAgentId?: string
+  commandInputTemplate: string
+  agentArgs?: string
+} {
   const globalRecipe = readSourceControlActionDefault(source.actions, operation)
   const repoRecipe =
     operation === 'conversationName' ? undefined : repoOverrides?.actionOverrides?.[operation]
@@ -138,12 +143,16 @@ export function resolveActionRecipeForTextOperation(
       : repoRecipe?.agentArgs === null
         ? ''
         : undefined
+  // The custom agent belongs to whichever recipe names the agent.
+  const customAgentId = (repoRecipe?.agentId !== undefined ? repoRecipe : globalRecipe)
+    .customAgentId
   return {
     ...(repoRecipe?.agentId !== undefined
       ? { agentId: repoRecipe.agentId }
       : globalRecipe.agentId !== undefined
         ? { agentId: globalRecipe.agentId }
         : {}),
+    ...(customAgentId ? { customAgentId } : {}),
     ...(repoAgentArgs !== undefined
       ? { agentArgs: repoAgentArgs }
       : globalRecipe.agentArgs !== undefined

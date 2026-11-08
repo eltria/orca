@@ -60,6 +60,7 @@ export type RepoSourceControlAiOverrides = {
       SourceControlActionId,
       {
         agentId?: TuiAgent | CustomAgentId | null
+        customAgentId?: string
         commandInputTemplate?: string | null
         agentArgs?: string | null
         argumentChoices?: SourceControlActionRecipe['argumentChoices']
@@ -78,6 +79,7 @@ export type RepoSourceControlAiOverrides = {
 
 export type CompleteSourceControlActionRecipe = {
   agentId: TuiAgent | CustomAgentId | null
+  customAgentId?: string
   commandInputTemplate: string
   agentArgs?: string | null
   argumentChoices?: SourceControlActionRecipe['argumentChoices']

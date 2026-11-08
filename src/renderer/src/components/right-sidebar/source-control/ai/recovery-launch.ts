@@ -28,10 +28,8 @@ import {
   readSourceControlLaunchRecipeAgentId
 } from '../../../../../../shared/source-control/ai/source-control-launch-agent-selection'
 import { isTuiAgentEnabled } from '../../../../../../shared/agent-launch/catalog/tui-agent-selection'
-import {
-  projectSelectedSourceControlActionLaunch,
-  resolveSourceControlActionPreferredSurface
-} from '../../../../../../shared/source-control/ai/recipes/source-control-action-launch-preferences'
+import { projectSelectedSourceControlActionLaunch } from '../../../../../../shared/source-control/ai/recipes/source-control-action-launch-preferences'
+import { resolveSourceControlActionPreferredSurface } from '../../../../../../shared/source-control/ai/recipes/source-control-action-surface'
 import type { SourceControlLaunchActionId } from '../../../../../../shared/source-control/ai/recipes/source-control-ai-actions'
 import { buildSourceControlRecoveryAgentCommandInput } from '../../../../../../shared/source-control/recovery/source-control-recovery-agent-command'
 import { translate } from '@/i18n/i18n'

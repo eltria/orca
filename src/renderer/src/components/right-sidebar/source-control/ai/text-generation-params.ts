@@ -1,3 +1,4 @@
+import { findCustomTuiAgent } from '../../../../../../shared/agent-launch/catalog/custom-tui-agents'
 import {
   CUSTOM_AGENT_ID,
   getCommitMessageAgentCapability,
@@ -15,8 +16,10 @@ export function buildCommitMessageGenerationParams(args: {
   commandTemplate: string
   agentArgs?: string
   baseParams: ResolvedSourceControlAiGenerationParams | null
-  settings: Pick<GlobalSettings, 'agentCmdOverrides'> | null | undefined
+  settings: Pick<GlobalSettings, 'agentCmdOverrides' | 'customTuiAgents'> | null | undefined
   customAgentCommand?: string
+  /** A custom agent for `agentId`; generation runs its command. */
+  customAgentId?: string
 }): ResolvedSourceControlAiGenerationParams | null {
   if (!args.agentId) {
     return null
@@ -46,7 +49,11 @@ export function buildCommitMessageGenerationParams(args: {
     sameResolvedAgent && args.baseParams?.thinkingLevel
       ? args.baseParams.thinkingLevel
       : model?.defaultThinkingLevel
-  const agentCommandOverride = args.settings?.agentCmdOverrides?.[args.agentId]?.trim()
+  const custom = args.customAgentId
+    ? findCustomTuiAgent(args.settings?.customTuiAgents, args.agentId, args.customAgentId)
+    : null
+  const agentCommandOverride =
+    custom?.command ?? args.settings?.agentCmdOverrides?.[args.agentId]?.trim()
   const customAgentCommand = args.baseParams?.customAgentCommand ?? args.customAgentCommand
   return {
     agentId: args.agentId,
@@ -55,6 +62,7 @@ export function buildCommitMessageGenerationParams(args: {
     commandInputTemplate: args.commandTemplate,
     ...(args.agentArgs !== undefined ? { agentArgs: args.agentArgs } : {}),
     ...(customAgentCommand ? { customAgentCommand } : {}),
-    ...(agentCommandOverride ? { agentCommandOverride } : {})
+    ...(agentCommandOverride ? { agentCommandOverride } : {}),
+    ...(custom ? { customAgentId: custom.id } : {})
   }
 }

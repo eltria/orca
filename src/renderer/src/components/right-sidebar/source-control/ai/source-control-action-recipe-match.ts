@@ -23,10 +23,12 @@ type NormalizedSourceControlActionRecipe = {
   launchPreferences: string
   argumentChoices: string
   surface: string
+  customAgentId: string
 }
 
 type PersistedSourceControlActionRecipe = {
   agentId?: SourceControlActionRecipe['agentId']
+  customAgentId?: string
   commandInputTemplate?: string | null
   agentArgs?: string | null
   argumentChoices?: SourceControlActionRecipe['argumentChoices']
@@ -69,7 +71,8 @@ function normalizeSourceControlActionRecipeForComparison(
             permission?.permissionMode ?? null
           ])
         : '',
-    surface: recipe?.surface ?? ''
+    surface: recipe?.surface ?? '',
+    customAgentId: recipe?.customAgentId ?? ''
   }
 }
 
@@ -83,7 +86,8 @@ function sourceControlActionRecipesMatch(
     left.agentArgs === right.agentArgs &&
     left.launchPreferences === right.launchPreferences &&
     left.argumentChoices === right.argumentChoices &&
-    left.surface === right.surface
+    left.surface === right.surface &&
+    left.customAgentId === right.customAgentId
   )
 }
 

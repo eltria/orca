@@ -41,6 +41,7 @@ export async function startFixChecksFromDialog(args: {
   targetRepoId: string | null
   item: GitHubWorkItem
   agent: Parameters<typeof launchWorkItemDirect>[0]['agentOverride']
+  customAgentId?: string
   commandInput: string
   /** Omitted when CLI arguments do not apply, so the launch resolves the global Agents setting. */
   agentArgs?: string
@@ -70,6 +71,7 @@ export async function startFixChecksFromDialog(args: {
     telemetrySource: 'sidebar',
     promptDelivery: 'submit-after-ready',
     agentOverride: args.agent,
+    ...(args.customAgentId ? { customAgentId: args.customAgentId } : {}),
     agentLaunchPreferences: args.agentLaunchPreferences,
     agentArgs: args.agentArgs,
     actionAgentArgs: args.actionAgentArgs,

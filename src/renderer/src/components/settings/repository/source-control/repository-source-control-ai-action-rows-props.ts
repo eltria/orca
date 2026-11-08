@@ -34,7 +34,7 @@ export type RepositorySourceControlAiActionRowsProps = {
   onActionAgentChange: (
     actionId: SourceControlActionId,
     value: string,
-    choice?: Pick<SourceControlActionRecipe, 'surface'>
+    choice?: Pick<SourceControlActionRecipe, 'surface' | 'customAgentId'>
   ) => void
   onActionLaunchPreferencesChange: (
     actionId: SourceControlActionId,

@@ -1,4 +1,7 @@
-import { lowerActionArgumentChoices } from '../../../../../../shared/source-control/ai/recipes/source-control-action-argument-document'
+import {
+  demoteActionArgumentChoices,
+  lowerActionArgumentChoices
+} from '../../../../../../shared/source-control/ai/recipes/source-control-action-argument-document'
 import {
   sourceControlActionSelectedPreferences,
   sourceControlActionExecutionArgs
@@ -47,6 +50,30 @@ export function resolveAgentArgsPlaceholderAgent(
     return effectiveAgent
   }
   return defaultTuiAgent && defaultTuiAgent !== 'blank' ? defaultTuiAgent : null
+}
+
+export function completeRepoActionRecipe(
+  recipe: SourceControlActionRecipe,
+  actionId: SourceControlActionId
+): NonNullable<
+  NonNullable<RepoSourceControlAiOverrides['actionOverrides']>[SourceControlActionId]
+> {
+  if (recipe.argumentChoices && recipe.argumentChoices.syntaxAgent !== recipe.agentId) {
+    recipe = demoteActionArgumentChoices(recipe)
+  }
+  const commandInputTemplate =
+    typeof recipe.commandInputTemplate === 'string'
+      ? recipe.commandInputTemplate
+      : DEFAULT_SOURCE_CONTROL_ACTION_COMMAND_TEMPLATES[actionId]
+  return {
+    agentId: recipe.agentId ?? null,
+    ...(recipe.customAgentId ? { customAgentId: recipe.customAgentId } : {}),
+    commandInputTemplate,
+    ...(typeof recipe.agentArgs === 'string' ? { agentArgs: recipe.agentArgs } : {}),
+    ...(recipe.argumentChoices ? { argumentChoices: recipe.argumentChoices } : {}),
+    ...(recipe.launchPreferences ? { launchPreferences: recipe.launchPreferences } : {}),
+    ...(recipe.surface ? { surface: recipe.surface } : {})
+  }
 }
 
 export function actionScopeLabel(hasOverride: boolean): string {

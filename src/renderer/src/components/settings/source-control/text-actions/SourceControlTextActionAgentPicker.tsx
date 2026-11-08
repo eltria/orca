@@ -52,7 +52,10 @@ export function SourceControlTextActionAgentPicker(props: TextActionPickerProps)
   useLayoutEffect(() => {
     current.current = props
   })
-  const onAgentChange = useCallback((value: string) => current.current.onAgentChange(value), [])
+  const onAgentChange = useCallback<TextActionPickerProps['onAgentChange']>(
+    (value, choice) => current.current.onAgentChange(value, choice),
+    []
+  )
   const onChange = useCallback<TextModelChange>(
     (choice, args, edits) => current.current.onChange?.(choice, args, edits),
     []
@@ -83,7 +86,8 @@ const TextActionPicker = memo(
             sourceControlAi: state.settings.sourceControlAi,
             commitMessageAi: state.settings.commitMessageAi,
             defaultTuiAgent: state.settings.defaultTuiAgent,
-            disabledTuiAgents: state.settings.disabledTuiAgents
+            disabledTuiAgents: state.settings.disabledTuiAgents,
+            customTuiAgents: state.settings.customTuiAgents
           }
       )
     )
@@ -290,27 +294,36 @@ const TextActionPicker = memo(
       'auto.components.settings.SourceControlAiActionRecipeDefaults.0740d30915',
       'Custom command'
     )
+    const pickedCustom = props.customAgentId
+      ? settings?.customTuiAgents?.find(
+          (custom) => custom.id === props.customAgentId && custom.agent === props.agent
+        )
+      : undefined
     const triggerLabel =
       props.agent === 'custom'
         ? customLabel
-        : props.agent === null && props.defaultAgentLabel
-          ? props.defaultAgentLabel
-          : [
-              setByArguments
-                ? t('agentPicker.setByArguments', 'Set by your Arguments')
-                : model?.label,
-              active?.label,
-              !setByArguments
-                ? model?.efforts.find((effort) => effort.value === effective?.options?.effort)
-                    ?.label
-                : undefined
-            ]
-              .filter(Boolean)
-              .join(' · ')
+        : pickedCustom
+          ? pickedCustom.name
+          : props.agent === null && props.defaultAgentLabel
+            ? props.defaultAgentLabel
+            : [
+                setByArguments
+                  ? t('agentPicker.setByArguments', 'Set by your Arguments')
+                  : model?.label,
+                active?.label,
+                !setByArguments
+                  ? model?.efforts.find((effort) => effort.value === effective?.options?.effort)
+                      ?.label
+                  : undefined
+              ]
+                .filter(Boolean)
+                .join(' · ')
     return (
       <AgentLaunchPicker
         {...{
           draftScope: props.draftScope,
+          includeCustomAgents: true,
+          customAgentId: pickedCustom?.id,
           agent: activeAgent,
           disabled: props.disabled || !settings || Boolean(props.repoId && (!repo || !host)),
           entries,
@@ -335,9 +348,14 @@ const TextActionPicker = memo(
           },
           onCatalogOpen: discovery.discover,
           onPick: (agent, draft, entry) => {
+            // A custom agent saves only itself; generation runs its command.
+            if (draft?.customAgentId) {
+              props.onAgentChange(agent, { customAgentId: draft.customAgentId })
+              return
+            }
             const inherited = draft && props.agent === null && agent === activeAgent
-            if (props.agent !== agent && !inherited) {
-              props.onAgentChange(agent)
+            if ((props.agent !== agent && !inherited) || pickedCustom) {
+              props.onAgentChange(agent, {})
             }
             if (!draft || !entry || !draft.textChanges?.length) {
               return

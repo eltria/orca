@@ -1,3 +1,4 @@
+import { pickedActionAgentFields } from './source-control-action-surface'
 import type {
   SourceControlActionLaunchPreferences,
   SourceControlActionRecipe
@@ -130,7 +131,8 @@ export function pickSourceControlActionAgent(
   selection: CurrentActionSelection,
   agent: TuiAgent,
   observedAgent: TuiAgent | null,
-  surface: SourceControlActionRecipe['surface']
+  surface: SourceControlActionRecipe['surface'],
+  customAgentId?: string
 ): CurrentActionSelection {
   const actual = isTuiAgent(selection.current.agentId) ? selection.current.agentId : observedAgent
   const same = actual === agent
@@ -146,7 +148,7 @@ export function pickSourceControlActionAgent(
       ? demoteActionArgumentChoices(selection.current)
       : selection.current
   return {
-    current: { ...current, agentId: agent, ...(surface ? { surface } : {}) },
+    current: { ...current, agentId: agent, ...pickedActionAgentFields(surface, customAgentId) },
     source: same
       ? selection.source
       : {

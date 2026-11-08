@@ -14,12 +14,12 @@ export function withRepoAiActionAgent(
   _settings: Pick<GlobalSettings, 'sourceControlAi' | 'commitMessageAi' | 'defaultTuiAgent'> | null,
   actionId: SourceControlActionId,
   agentId: RepoActionRecipe['agentId'],
-  choice?: Pick<SourceControlActionRecipe, 'surface'>
+  choice?: Pick<SourceControlActionRecipe, 'surface' | 'customAgentId'>
 ): RepoSourceControlAiOverrides {
   const currentRecipe = base.actionOverrides?.[actionId] ?? {}
   // A model, permission mode and chat-or-CLI pick are one agent's choices; none survives a change.
   const sameAgent = currentRecipe.agentId === agentId
-  const { launchPreferences, surface, ...rest } =
+  const { launchPreferences, surface, customAgentId, ...rest } =
     sameAgent || !currentRecipe.argumentChoices
       ? currentRecipe
       : demoteActionArgumentChoices({
@@ -36,6 +36,13 @@ export function withRepoAiActionAgent(
           : {}
         : surface && sameAgent
           ? { surface }
+          : {}),
+      ...(choice
+        ? choice.customAgentId
+          ? { customAgentId: choice.customAgentId }
+          : {}
+        : customAgentId && sameAgent
+          ? { customAgentId }
           : {}),
       agentId
     })

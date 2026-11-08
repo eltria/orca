@@ -18,6 +18,8 @@ export type TextModelChange = (
 export type TextActionPickerProps = {
   actionId: AiActionId
   agent: TuiAgent | 'custom' | null
+  /** The action's custom agent for `agent`; generation runs its command. */
+  customAgentId?: string
   source?: SourceControlAiSettings
   repoId?: string
   repoAi?: RepoSourceControlAiOverrides
@@ -25,7 +27,7 @@ export type TextActionPickerProps = {
   draftScope?: object
   disabled?: boolean
   defaultAgentLabel?: string
-  onAgentChange: (value: string) => void
+  onAgentChange: (value: string, choice?: { customAgentId?: string }) => void
   onChange?: TextModelChange
   /** Saves model lists the CLI reports; without it the menu shows only saved lists. */
   writeSourceControlAiSettings?: (patch: SourceControlAiSettingsPatch) => Promise<void>

@@ -1,3 +1,4 @@
+import { normalizeChoiceCustomAgentId } from '../../../agent-launch/catalog/custom-tui-agents'
 import {
   normalizeActionArgumentDocument,
   trimActionArgumentDocument,
@@ -52,6 +53,8 @@ export type SourceControlActionSurface = 'chat' | 'terminal'
 
 export type SourceControlActionRecipe = {
   agentId?: TuiAgent | CustomAgentId | null
+  /** A custom agent of the host for `agentId`; it runs that agent's command instead. */
+  customAgentId?: string
   commandInputTemplate?: string
   agentArgs?: string
   argumentChoices?: ActionArgumentChoices
@@ -160,6 +163,10 @@ export function normalizeSourceControlActionRecipe(
   ) {
     normalized.agentId = agentId
   }
+  const customAgentId = normalizeChoiceCustomAgentId(agentId, value.customAgentId)
+  if (customAgentId) {
+    normalized.customAgentId = customAgentId
+  }
   if (typeof value.commandInputTemplate === 'string') {
     normalized.commandInputTemplate = value.commandInputTemplate
   }
@@ -230,6 +237,7 @@ export function readSourceControlActionDefault(
   const value = defaults?.[actionId]
   return trimActionArgumentDocument({
     ...(value?.agentId !== undefined ? { agentId: value.agentId } : {}),
+    ...(value?.customAgentId ? { customAgentId: value.customAgentId } : {}),
     ...(typeof value?.commandInputTemplate === 'string'
       ? { commandInputTemplate: value.commandInputTemplate.trim() }
       : {}),
@@ -277,7 +285,10 @@ export function setSourceControlActionAgentDefault(
   if (
     !current ||
     current.agentId === agentId ||
-    (!current.launchPreferences && !current.surface && !current.argumentChoices)
+    (!current.launchPreferences &&
+      !current.surface &&
+      !current.argumentChoices &&
+      !current.customAgentId)
   ) {
     return setSourceControlActionDefault(defaults, actionId, { agentId })
   }
@@ -285,6 +296,7 @@ export function setSourceControlActionAgentDefault(
   const {
     launchPreferences: _previousAgentModel,
     surface: _previousSurface,
+    customAgentId: _previousCustomAgent,
     ...rest
   } = demoteActionArgumentChoices(current)
   return { ...defaults, [actionId]: { ...rest, agentId } }

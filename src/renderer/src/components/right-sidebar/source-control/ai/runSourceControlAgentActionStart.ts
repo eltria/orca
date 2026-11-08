@@ -62,6 +62,8 @@ export type RunSourceControlAgentActionStartArgs = {
     onFailureNotified?: () => void
     agentLaunchPreferences?: AgentLaunchPreferences
     agent: TuiAgent
+    /** A custom agent of this host for `agent`; it opens a terminal. */
+    customAgentId?: string
     commandInput: string
     /** Omitted when CLI arguments do not apply, so the launch resolves the global setting. */
     agentArgs?: string

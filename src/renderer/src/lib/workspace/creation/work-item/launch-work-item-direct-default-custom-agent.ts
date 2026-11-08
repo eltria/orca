@@ -7,12 +7,13 @@ import type {
   LaunchWorkItemDirectArgs
 } from './launch-work-item-direct-types'
 
-/** With no picked agent, the default agent's default custom agent starts in its place, in a terminal. */
-export function withDefaultCustomAgentInputs(
+/** A picked custom agent, or with no picked agent the default custom agent, starts in a terminal. */
+export function withCustomAgentInputs(
   args: LaunchWorkItemDirectArgs,
   settings: CustomTuiAgentSettings | null | undefined
 ): LaunchWorkItemDirectArgs {
-  if (args.agentOverride || !settings?.defaultCustomTuiAgentId) {
+  const pickedId = args.agentOverride ? args.customAgentId : undefined
+  if (!pickedId && (args.agentOverride || !settings?.defaultCustomTuiAgentId)) {
     return args
   }
   const resolveInputs = args.resolveLaunchInputs
@@ -29,8 +30,12 @@ export function withDefaultCustomAgentInputs(
               : args.sessionOptions,
             chatSessionOptions: args.chatSessionOptions
           }
-      const custom = defaultCustomTuiAgentFor(settings, agent)
-      return custom ? { ...inputs, customAgentId: custom.id, requestedSurface: 'terminal' } : inputs
+      const customAgentId = pickedId
+        ? agent === args.agentOverride
+          ? pickedId
+          : undefined
+        : defaultCustomTuiAgentFor(settings, agent)?.id
+      return customAgentId ? { ...inputs, customAgentId, requestedSurface: 'terminal' } : inputs
     }
   }
 }

@@ -31,6 +31,7 @@ import { AgentLaunchPickerMenu } from './AgentLaunchPickerMenu'
 import { useAgentLaunchPickerInventory } from './use-agent-launch-picker-inventory'
 import {
   agentPickerDraft,
+  customAgentPickerDraft,
   type AgentPickerDraft,
   type AgentPickerEntry
 } from '../../../../shared/agent-launch/picker/agent-launch-picker'
@@ -61,6 +62,7 @@ export const AgentLaunchPicker = memo(
     defaultAgent,
     onSetDefault,
     includeCustomAgents,
+    customAgentId,
     onPick
   }: {
     model: NewTabAgentMenuModel
@@ -89,6 +91,8 @@ export const AgentLaunchPicker = memo(
     onSetDefault?: (agent: AgentPickerEntry['agent']) => void
     /** Lists custom agents; the picked draft then carries `customAgentId`, which the caller must launch. */
     includeCustomAgents?: boolean
+    /** The picked custom agent, for callers that keep no `value`. */
+    customAgentId?: string
     onPick: (
       agent: AgentPickerEntry['agent'],
       draft?: AgentPickerDraft,
@@ -167,8 +171,9 @@ export const AgentLaunchPicker = memo(
       }
     }, [catalogAgent, onCatalogOpen])
     const customAgents = useAppStore((state) => state.settings?.customTuiAgents)
-    const pickedCustom = value?.customAgentId
-      ? customAgents?.find((custom) => custom.id === value.customAgentId && custom.agent === agent)
+    const pickedCustomId = value?.customAgentId ?? customAgentId
+    const pickedCustom = pickedCustomId
+      ? customAgents?.find((custom) => custom.id === pickedCustomId && custom.agent === agent)
       : undefined
     const entry = entries.find((entry) => entry.agent === agent)
     const draft = entry ? (value ?? draftForEntry?.(entry)) : undefined
@@ -259,7 +264,7 @@ export const AgentLaunchPicker = memo(
                 entries={entries}
                 initialQuery={initialQuery}
                 searchInputRef={setSearchInput}
-                value={value}
+                value={value ?? (pickedCustom ? customAgentPickerDraft(pickedCustom) : undefined)}
                 draftForEntry={draftForEntry}
                 mode="select"
                 disabled={disabled}

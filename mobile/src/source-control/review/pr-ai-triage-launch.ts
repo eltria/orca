@@ -91,6 +91,10 @@ export async function launchAgentWithPrompt(args: {
     hostCapabilities: args.hostCapabilities,
     worktreeId: args.worktreeId,
     agent: resolved.agent,
+    // A saved custom agent the host lost still goes to the host, which refuses it by name.
+    ...((projection.customAgentId ?? resolved.customAgent?.id)
+      ? { customAgentId: projection.customAgentId ?? resolved.customAgent?.id }
+      : {}),
     ...(projection.sessionOptions ? { chatOptions: projection.sessionOptions } : {}),
     agentArgs: projection.agentArgs,
     surface: projection.requestedSurface,

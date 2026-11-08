@@ -1,3 +1,9 @@
+import {
+  findCustomTuiAgent,
+  normalizeCustomTuiAgents,
+  readDefaultCustomTuiAgent,
+  type CustomTuiAgent
+} from '../../../../src/shared/agent-launch/catalog/custom-tui-agents'
 import type { GlobalSettings } from '../../../../src/shared/global-settings-types'
 import type { Repo } from '../../../../src/shared/repo-types'
 import type {
@@ -16,12 +22,23 @@ import { translate } from '../../i18n/mobile-i18n'
 import type { MobileAgentLaunchContext } from '../../session/agent-launch/mobile-new-tab-agent-loader'
 
 export type MobileSourceControlLaunchAgent =
-  | { kind: 'agent'; agent: TuiAgent; recipe: SourceControlActionRecipe | null }
+  | {
+      kind: 'agent'
+      agent: TuiAgent
+      recipe: SourceControlActionRecipe | null
+      /** The action's custom agent on the host; the host starts its command. */
+      customAgent?: CustomTuiAgent
+    }
   | { kind: 'unavailable'; message: string }
 
 type LaunchAgentSettings = Pick<
   GlobalSettings,
-  'sourceControlAi' | 'commitMessageAi' | 'defaultTuiAgent' | 'disabledTuiAgents'
+  | 'sourceControlAi'
+  | 'commitMessageAi'
+  | 'defaultTuiAgent'
+  | 'disabledTuiAgents'
+  | 'customTuiAgents'
+  | 'defaultCustomTuiAgentId'
 >
 
 export function resolveMobileSourceControlLaunchAgent(
@@ -51,8 +68,20 @@ export function resolveMobileSourceControlLaunchAgent(
     detectedAgents,
     disabledAgents: settings?.disabledTuiAgents
   })
+  // The action's own custom agent; with no saved agent, the default agent's custom agent.
+  const customAgent = !agent
+    ? null
+    : recipe?.customAgentId
+      ? findCustomTuiAgent(
+          normalizeCustomTuiAgents(settings?.customTuiAgents),
+          agent,
+          recipe.customAgentId
+        )
+      : savedAgent
+        ? null
+        : readDefaultCustomTuiAgent(settings, agent)
   return agent
-    ? { kind: 'agent', agent, recipe }
+    ? { kind: 'agent', agent, recipe, ...(customAgent ? { customAgent } : {}) }
     : {
         kind: 'unavailable',
         message: translate(

@@ -6,7 +6,8 @@ import { normalizeSourceControlAiSettings } from '../../../../../shared/source-c
 import { resolveSourceControlAiForOperation } from '../../../../../shared/source-control/ai/source-control-ai-operation-resolution'
 import {
   DEFAULT_SOURCE_CONTROL_ACTION_COMMAND_TEMPLATES,
-  setSourceControlActionDefault
+  setSourceControlActionDefault,
+  type SourceControlActionRecipe
 } from '../../../../../shared/source-control/ai/recipes/source-control-ai-actions'
 import { CUSTOM_AGENT_ID } from '../../../../../shared/source-control/ai/generation/commit-message-agent-spec'
 import { isTuiAgent } from '../../../../../shared/agent-launch/catalog/tui-agent-config'
@@ -140,7 +141,10 @@ export function ChatNamingSetting({
     }
   }
 
-  const saveAgent = async (selected: string): Promise<void> => {
+  const saveAgent = async (
+    selected: string,
+    choice?: Pick<SourceControlActionRecipe, 'customAgentId'>
+  ): Promise<void> => {
     const agentId =
       selected === '__default_agent__'
         ? null
@@ -151,7 +155,11 @@ export function ChatNamingSetting({
             : null
     try {
       await writeSourceControlAiSettings((current) => ({
-        actions: setSourceControlActionDefault(current.actions, 'conversationName', { agentId })
+        actions: setSourceControlActionDefault(current.actions, 'conversationName', {
+          agentId,
+          // Naming runs the custom agent's command; any other pick drops it.
+          customAgentId: choice?.customAgentId
+        })
       }))
     } catch (error) {
       console.error('Failed to save chat name agent', error)
@@ -267,7 +275,8 @@ export function ChatNamingSetting({
                     cliAgent && cliAgent !== 'custom' ? cliAgent : settings.defaultTuiAgent
                   }
                   isSavingTemplate={isSaving}
-                  onAgentChange={(_id, selected) => void saveAgent(selected)}
+                  customAgentId={recipe?.customAgentId}
+                  onAgentChange={(_id, selected, choice) => void saveAgent(selected, choice)}
                   onTemplateChange={(_id, template) =>
                     updateDraft({ ...value, commandInputTemplate: template })
                   }

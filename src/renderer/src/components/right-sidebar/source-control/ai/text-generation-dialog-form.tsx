@@ -105,6 +105,7 @@ export function SourceControlTextGenerationDialogForm({
   const [agentId, setAgentId] = useState<CommitMessageGenerationAgentChoice>(
     baseParams?.agentId ?? ''
   )
+  const [customAgentId, setCustomAgentId] = useState(baseParams?.customAgentId)
   const [commandTemplate, setCommandTemplate] = useState(
     baseParams?.commandInputTemplate ?? '{basePrompt}'
   )
@@ -126,7 +127,8 @@ export function SourceControlTextGenerationDialogForm({
       agentArgs,
       baseParams,
       settings,
-      customAgentCommand: baseParams?.customAgentCommand
+      customAgentCommand: baseParams?.customAgentCommand,
+      customAgentId
     })
   const params = buildParams(settings)
   // Only chips use workspace previews; synthetic planning keeps empty linkedIssue from blocking repo/global recipe saves.
@@ -240,6 +242,8 @@ export function SourceControlTextGenerationDialogForm({
             )}
           </Label>
           <AgentLaunchPicker
+            includeCustomAgents
+            customAgentId={customAgentId}
             model={pickerModel}
             entries={entries}
             setupDisabled
@@ -256,8 +260,9 @@ export function SourceControlTextGenerationDialogForm({
               'auto.components.right.sidebar.SourceControlTextGenerationDialogForm.cce2cbd01d',
               'Choose agent'
             )}
-            onPick={(agent) => {
+            onPick={(agent, draft) => {
               setAgentId(agent)
+              setCustomAgentId(draft?.customAgentId)
               setGenerationError(null)
             }}
           >
@@ -265,6 +270,7 @@ export function SourceControlTextGenerationDialogForm({
               <DropdownMenuItem
                 onSelect={() => {
                   setAgentId(CUSTOM_AGENT_ID)
+                  setCustomAgentId(undefined)
                   setGenerationError(null)
                 }}
               >

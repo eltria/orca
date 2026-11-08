@@ -52,6 +52,11 @@ export function normalizeDefaultCustomTuiAgentId(input: unknown): string | undef
   return id || undefined
 }
 
+/** A saved choice's custom agent id, kept only beside the built-in agent it runs as. */
+export function normalizeChoiceCustomAgentId(agent: unknown, input: unknown): string | undefined {
+  return isTuiAgent(agent) ? normalizeDefaultCustomTuiAgentId(input) : undefined
+}
+
 /** The custom agent a launch names; null when it was deleted or now backs another agent. */
 export function findCustomTuiAgent(
   customAgents: readonly CustomTuiAgent[] | null | undefined,

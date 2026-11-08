@@ -29,7 +29,9 @@ export function useMobileLaunchAgentLabel(args: {
   }
   // An unknown agent keeps the generic label; the launch itself reports the real failure.
   const agent = resolveMobileSourceControlLaunchAgent(context, actionId)
-  return agent.kind === 'agent' ? MOBILE_TUI_AGENT_LABELS[agent.agent] : null
+  return agent.kind === 'agent'
+    ? (agent.customAgent?.name ?? MOBILE_TUI_AGENT_LABELS[agent.agent])
+    : null
 }
 
 // Labels sit in workspace routes, whose path names the paired host.

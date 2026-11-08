@@ -1,3 +1,4 @@
+import { findCustomTuiAgent } from '../../agent-launch/catalog/custom-tui-agents'
 import {
   CUSTOM_AGENT_ID,
   getCommitMessageAgentSpec,
@@ -45,6 +46,8 @@ export type ResolvedSourceControlAiGenerationParams = {
   agentArgs?: string
   customAgentCommand?: string
   agentCommandOverride?: string
+  /** The custom agent whose command `agentCommandOverride` is. */
+  customAgentId?: string
 }
 
 export type ResolvedSourceControlAiOperation = {
@@ -62,6 +65,7 @@ export type SourceControlAiSettingsInput = Partial<
     GlobalSettings,
     | 'defaultTuiAgent'
     | 'agentCmdOverrides'
+    | 'customTuiAgents'
     | 'commitMessageAi'
     | 'sourceControlAi'
     | 'disabledTuiAgents'
@@ -225,7 +229,17 @@ export function resolveSourceControlAiForOperation(
     repoOverrides,
     operation: input.operation
   })
-  const agentCommandOverride = input.settings.agentCmdOverrides?.[resolvedAgent]?.trim()
+  // A custom agent runs its own command (such as a wrapper) in place of the agent's.
+  const customTuiAgent =
+    actionRecipe.customAgentId && actionRecipe.agentId === resolvedAgent
+      ? findCustomTuiAgent(
+          input.settings.customTuiAgents,
+          resolvedAgent,
+          actionRecipe.customAgentId
+        )
+      : null
+  const agentCommandOverride =
+    customTuiAgent?.command ?? input.settings.agentCmdOverrides?.[resolvedAgent]?.trim()
   return {
     ok: true,
     value: {
@@ -236,7 +250,8 @@ export function resolveSourceControlAiForOperation(
         thinkingLevel,
         ...commonParams,
         ...(customAgentCommand ? { customAgentCommand } : {}),
-        ...(agentCommandOverride ? { agentCommandOverride } : {})
+        ...(agentCommandOverride ? { agentCommandOverride } : {}),
+        ...(customTuiAgent ? { customAgentId: customTuiAgent.id } : {})
       },
       prCreationDefaults
     }

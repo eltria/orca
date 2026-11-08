@@ -1,5 +1,5 @@
 import { invalidTerminalArgsMessage } from './launch-work-item-direct-messages'
-import { withDefaultCustomAgentInputs } from './launch-work-item-direct-default-custom-agent'
+import { withCustomAgentInputs } from './launch-work-item-direct-default-custom-agent'
 import {
   planAgentCliArgsSuffix,
   type AgentStartupShell
@@ -247,7 +247,7 @@ export function captureDirectWorkItemLaunchArgs(
   args: LaunchWorkItemDirectArgs
 ): LaunchWorkItemDirectArgs {
   return {
-    ...withDefaultCustomAgentInputs(args, useAppStore.getState().settings),
+    ...withCustomAgentInputs(args, useAppStore.getState().settings),
     ...(args.sessionOptions ? { sessionOptions: { ...args.sessionOptions } } : {}),
     ...(args.chatSessionOptions !== undefined
       ? { chatSessionOptions: { ...args.chatSessionOptions } }
